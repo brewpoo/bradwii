@@ -116,7 +116,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 	#define USEDIGITALPORTE // for PWM
 	#define USEDIGITALPORTH // for PWM
-	
+    #define USEDIGITALPORTL // for PWM
+
 	// timer 1 is free, use it for better resolution and less overhead
 	#define USETIMER1FORGENERALTIMER
 

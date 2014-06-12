@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "config.h"
 #include "lib_digitalio.h"
 #include "output.h"
+#include "aircraft.h"
 
 // This file takes the settings from config.h and creates all of the definitions needed for the rest of the code.
 
@@ -229,7 +230,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 #else
-   You need to define a Control Board in config.h!
+  #error You need to define a Control Board in config.h!
 #endif
 
 #ifndef RXNUMCHANNELS
@@ -282,6 +283,30 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
    #define MOTOR_4_PIN (DIGITALPORTH | 4)
    #define MOTOR_5_CHANNEL (OUTPUT_TIMER4 | OUTPUT_CHANNELC)
    #define MOTOR_5_PIN (DIGITALPORTH | 5)
+
+   #define D10_PIN (DIGITALPORTB | 4) // Pin 23 - PB4/OC2A
+   #define D9_PIN  (DIGITALPORTH | 6) // Pin 18 - PH6/OC2B
+   #define D8_PIN  (DIGITALPORTH | 5) // Pin 17 - PH5/OC4C
+   #define D7_PIN  (DIGITALPORTH | 4) // Pin 16 - PH4/OC4B
+   #define D6_PIN  (DIGITALPORTH | 3) // Pin 15 - PH3/OC4A
+   #define D5_PIN  (DIGITALPORTE | 3) // Pin 5  - PE3/OC3A
+   #define D3_PIN  (DIGITALPORTE | 5) // Pin 7  - PE5/OC3C
+   #define D2_PIN  (DIGITALPORTE | 4) // Pin 6  - PE3/OC3B
+   #define D44_PIN (DIGITALPORTL | 5) // Pin 40 - PL5/OC5C
+   #define D45_PIN (DIGITALPORTL | 4) // Pin 39 - PL4/OC5B
+   #define D46_PIN (DIGITALPORTL | 3) // Pin 38 - PL3/OC5A
+
+   #define D10_PWM (OUTPUT_TIMER2 | OUTPUT_CHANNELA)
+   #define D9_PWM  (OUTPUT_TIMER2 | OUTPUT_CHANNELB)
+   #define D8_PWM  (OUTPUT_TIMER4 | OUTPUT_CHANNELC)
+   #define D7_PWM  (OUTPUT_TIMER4 | OUTPUT_CHANNELB)
+   #define D6_PWM  (OUTPUT_TIMER4 | OUTPUT_CHANNELA)
+   #define D5_PWM  (OUTPUT_TIMER3 | OUTPUT_CHANNELA)
+   #define D3_PWM  (OUTPUT_TIMER3 | OUTPUT_CHANNELC)
+   #define D2_PWM  (OUTPUT_TIMER3 | OUTPUT_CHANNELB)
+   #define D44_PWM (OUTPUT_TIMER5 | OUTPUT_CHANNELC)
+   #define D45_PWM (OUTPUT_TIMER5 | OUTPUT_CHANNELB)
+   #define D46_PWM (OUTPUT_TIMER5 | OUTPUT_CHANNELA)
 
 #elif (MICROCONTROLLER_TYPE==MEGA328P)
    #define THROTTLE_RX_INPUT (DIGITALPORTD | 2)
@@ -362,16 +387,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
    #define MOTOR_5_CHANNEL (OUTPUT_TIMER4 | OUTPUT_CHANNELA)
    #define MOTOR_5_PIN (DIGITALPORTC | 1)
 
-#endif
-
-// default to QUADX if no configuration was chosen
-#ifndef AIRCRAFT_CONFIGURATION
-#define AIRCRAFT_CONFIGURATION QUADX
-#endif
-
-// set aircraft type dependant defines here
-#if (AIRCRAFT_CONFIGURATION==QUADX)
-   #define NUMMOTORS 4
 #endif
 
 // set configuration port baud rates to defaults if none have been set
