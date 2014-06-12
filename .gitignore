@@ -8,3 +8,5 @@ DerivedData/
 .svn
 .DS_Store
 *.o
+*.elf
+*.hex
