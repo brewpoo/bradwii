@@ -105,8 +105,7 @@ fixedpointnum integratedangleerror[3];
 unsigned long timeslivertimer=0;
 
 // It all starts here:
-int main(void)
-   {
+int main(void) {
    // start with default user settings in case there's nothing in eeprom
    defaultusersettings();
    // try to load usersettings from eeprom
@@ -133,15 +132,14 @@ int main(void)
    initgps();
    initimu();
    
-   // set the default i2c speed to 400 Mhz.  If a device needs to slow it down, it can, but it should set it back.
+   // set the default i2c speed to 400 KHz.  If a device needs to slow it down, it can, but it should set it back.
    lib_i2c_setclockspeed(I2C_400_KHZ);
 
    global.armed=0;
    global.navigationmode=NAVIGATIONMODEOFF;
    global.failsafetimer=lib_timers_starttimer();
 
-   for(;;)
-      {
+   for(;;) {
       // check to see what switches are activated
       checkcheckboxitems();
       

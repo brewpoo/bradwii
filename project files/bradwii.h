@@ -47,8 +47,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 // put all of the global variables into one structure to make them easy to find
-typedef struct
-   {
+typedef struct {
    unsigned char usersettingsfromeeprom;            // set to 1 if user settings were read from eeprom
    fixedpointnum barorawaltitude;                  // Current altitude read from barometer, in meters (approximately)
    fixedpointnum debugvalue[4];                     // for display in the multiwii config program. Use for debugging.
@@ -65,6 +64,8 @@ typedef struct
    fixedpointnum heading_when_armed;                  // the heading we were pointing when arming was established
    fixedpointnum altitude_when_armed;                  // The altitude when arming established
    unsigned int motoroutputvalue[NUMMOTORS];         // Output values to send to our motors, from 1000 to 2000
+   unsigned int motor[NUMMOTORS];
+   unsigned int servo[NUMSERVOS];
    unsigned long activecheckboxitems;               // Bits for each checkbox item to show which are currently active
    unsigned long previousactivecheckboxitems;      // The previous state of these bits so we can tell when they turn on and off
    unsigned char armed;                              // A flag indicating that the aircraft is armed
