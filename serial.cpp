@@ -45,8 +45,7 @@ extern usersettingsstruct usersettings;
 extern const char checkboxnames[];
 extern unsigned int lib_i2c_error_count;
 
-void serialinit()
-   {
+void serialinit() {
 #if (MULTIWII_CONFIG_SERIAL_PORTS & SERIALPORT0)
    lib_serial_initport(0,SERIAL_0_BAUD);
 #endif
@@ -66,7 +65,7 @@ void serialinit()
 #if (MULTIWII_CONFIG_SERIAL_PORTS & SERIALPORTUSB)
    lib_serial_initport(USBPORTNUMBER,0);
 #endif
-   }
+}
 
 #if (MULTIWII_CONFIG_SERIAL_PORTS!=NOSERIALPORT)
 #define SERIALSTATEIDLE 0
@@ -87,128 +86,99 @@ unsigned char serialcommand[5];
 unsigned char serialdatasize[5];
 unsigned char serialchecksum[5];
 
-void sendandchecksumcharacter(char portnumber,unsigned char c)
-   {
-   lib_serial_sendchar(portnumber,c);
-   serialchecksum[portnumber]^=c;
-   }
+void sendandchecksumcharacter(unsigned char portnumber,unsigned char c) {
+    lib_serial_sendchar(portnumber,c);
+    serialchecksum[portnumber]^=c;
+}
    
-void sendandchecksumdata(char portnumber,unsigned char *data,char length)
-   {
+void sendandchecksumdata(char portnumber,unsigned char *data,char length) {
    for (int x=0;x<length;++x)
       sendandchecksumcharacter(portnumber,data[x]);
-   }
+}
    
-void sendandchecksumint(char portnumber,unsigned int value)
-   {
+void sendandchecksumint(char portnumber,unsigned int value) {
    sendandchecksumdata(portnumber,(unsigned char *)&value,2);
-   }
+}
    
-void sendandchecksumlong(char portnumber,unsigned long value)
-   {
+void sendandchecksumlong(char portnumber,unsigned long value) {
    sendandchecksumdata(portnumber,(unsigned char *)&value,4);
-   }
+}
    
-void sendgoodheader(char portnumber,unsigned char size)
-   {
+void sendgoodheader(unsigned char portnumber,unsigned char size) {
    lib_serial_sendchar(portnumber,'$');
    lib_serial_sendchar(portnumber,'M');
    lib_serial_sendchar(portnumber,'>');
    lib_serial_sendchar(portnumber,size);
    serialchecksum[portnumber]=size;
    sendandchecksumcharacter(portnumber,serialcommand[portnumber]);
-   }
+}
    
-void senderrorheader(char portnumber)
-   {
+void senderrorheader(unsigned char portnumber) {
    lib_serial_sendchar(portnumber,'$');
    lib_serial_sendchar(portnumber,'M');
    lib_serial_sendchar(portnumber,'!');
    lib_serial_sendchar(portnumber,0);
    serialchecksum[portnumber]=0;
    sendandchecksumcharacter(portnumber,serialcommand[portnumber]);
-   }
+}
    
-void evaluatecommand(char portnumber,unsigned char *data)
-   {
-   unsigned char command=serialcommand[portnumber];
-   if (command==MSP_IDENT)
-      { // send rx data
-      sendgoodheader(portnumber,7);
-      sendandchecksumcharacter(portnumber,VERSION);
-      sendandchecksumcharacter(portnumber,AIRCRAFT_CONFIGURATION);
-      sendandchecksumcharacter(portnumber,MSP_VERSION);
-      for (int x=0;x<4;++x) sendandchecksumcharacter(portnumber,0); // 32 bit "capability"
-      }
-   else if (command==MSP_RC)
-      { // send rx data
-      sendgoodheader(portnumber,16);
-      for (int x=0;x<8;++x)
-         {
-         int value=0;
-         if (x<RXNUMCHANNELS) value=((global.rxvalues[x]*500L)>>FIXEDPOINTSHIFT)+1500;
+void evaluatecommand(unsigned char portnumber,unsigned char *data) {
+    unsigned char command=serialcommand[portnumber];
+    if (command==MSP_IDENT) { // send rx data
+        sendgoodheader(portnumber,7);
+        sendandchecksumcharacter(portnumber,VERSION);
+        sendandchecksumcharacter(portnumber,AIRCRAFT_CONFIGURATION);
+        sendandchecksumcharacter(portnumber,MSP_VERSION);
+        for (int x=0;x<4;++x) sendandchecksumcharacter(portnumber,0); // 32 bit "capability"
+    } else if (command==MSP_RC) { // send rx data
+        sendgoodheader(portnumber,16);
+        for (int x=0;x<8;++x) {
+            int value=0;
+            if (x<RXNUMCHANNELS) value=((global.rxvalues[x]*500L)>>FIXEDPOINTSHIFT)+1500;
 
-         sendandchecksumdata(portnumber,(unsigned char *)&value,2);
-         }
-      }
-   else if (command==MSP_ATTITUDE)
-      { // send attitude data
-      sendgoodheader(portnumber,6);
-      // convert our estimated gravity vector into roll and pitch angles
-      int value;
-      value=(global.currentestimatedeulerattitude[0]*10)>>FIXEDPOINTSHIFT;
-      sendandchecksumdata(portnumber,(unsigned char *)&value,2);
-      value=(global.currentestimatedeulerattitude[1]*10)>>FIXEDPOINTSHIFT;
-      sendandchecksumdata(portnumber,(unsigned char *)&value,2);
-      value=(global.currentestimatedeulerattitude[2])>>FIXEDPOINTSHIFT;
-      sendandchecksumdata(portnumber,(unsigned char *)&value,2);
-      }
-   else if (command==MSP_ALTITUDE)
-      { // send attitude data
-      sendgoodheader(portnumber,4);
-      fixedpointnum fp=(global.altitude*25)>>(FIXEDPOINTSHIFT-2);
-      sendandchecksumdata(portnumber,(unsigned char *)&fp,4);
-      }
-   else if (command==MSP_MAG_CALIBRATION)
-      { // send attitude data
-      if (!global.armed) calibratecompass();
-      sendgoodheader(portnumber,0);
-      }
-   else if (command==MSP_ACC_CALIBRATION)
-      { // send attitude data
-      if (!global.armed) calibrategyroandaccelerometer();
-      sendgoodheader(portnumber,0);
-      }
-
-   else if (command==MSP_RAW_IMU)
-      { // send attitude data
-      sendgoodheader(portnumber,18);
-      for (int x=0;x<3;++x)
-         { // convert from g's to what multiwii uses
-         int value=global.acc_g_vector[x]>>8;
-         sendandchecksumdata(portnumber,(unsigned char *)&value,2);
-         }
-      for (int x=0;x<3;++x)
-         { // convert from degrees per second to /8000
-         int value=(global.gyrorate[x])>>14; // this is aproximate
-         sendandchecksumdata(portnumber,(unsigned char *)&value,2);
-         }
-      for (int x=0;x<3;++x)
-         { // convert from
-         int value=(global.compassvector[x])>>8;
-         sendandchecksumdata(portnumber,(unsigned char *)&value,2);
-         }
-      }
-   else if (command==MSP_STATUS)
-      { // send attitude data
-      sendgoodheader(portnumber,10);
-      sendandchecksumint(portnumber,(global.timesliver*15)>>8); // convert from fixedpointnum to microseconds
-      sendandchecksumint(portnumber,lib_i2c_error_count); // i2c error count
-      sendandchecksumint(portnumber,CAPABILITES); // baro mag, gps, sonar
-      sendandchecksumdata(portnumber,(unsigned char *)&global.activecheckboxitems,4); // options1
-      }
-   else if (command==MSP_MOTOR)
-      { // send motor output data
+            sendandchecksumdata(portnumber,(unsigned char *)&value,2);
+        }
+    } else if (command==MSP_ATTITUDE) { // send attitude data
+        sendgoodheader(portnumber,6);
+        // convert our estimated gravity vector into roll and pitch angles
+        int value;
+        value=(global.currentestimatedeulerattitude[0]*10)>>FIXEDPOINTSHIFT;
+        sendandchecksumdata(portnumber,(unsigned char *)&value,2);
+        value=(global.currentestimatedeulerattitude[1]*10)>>FIXEDPOINTSHIFT;
+        sendandchecksumdata(portnumber,(unsigned char *)&value,2);
+        value=(global.currentestimatedeulerattitude[2])>>FIXEDPOINTSHIFT;
+        sendandchecksumdata(portnumber,(unsigned char *)&value,2);
+    } else if (command==MSP_ALTITUDE) { // send attitude data
+        sendgoodheader(portnumber,4);
+        fixedpointnum fp=(global.altitude*25)>>(FIXEDPOINTSHIFT-2);
+        sendandchecksumdata(portnumber,(unsigned char *)&fp,4);
+    } else if (command==MSP_MAG_CALIBRATION) { // send attitude data
+        if (!global.armed) calibratecompass();
+        sendgoodheader(portnumber,0);
+    } else if (command==MSP_ACC_CALIBRATION) { // send attitude data
+        if (!global.armed) calibrategyroandaccelerometer();
+        sendgoodheader(portnumber,0);
+    } else if (command==MSP_RAW_IMU) { // send attitude data
+        sendgoodheader(portnumber,18);
+        for (int x=0;x<3;++x) { // convert from g's to what multiwii uses
+            int value=global.acc_g_vector[x]>>8;
+            sendandchecksumdata(portnumber,(unsigned char *)&value,2);
+        }
+        for (int x=0;x<3;++x) { // convert from degrees per second to /8000
+            int value=(global.gyrorate[x])>>14; // this is aproximate
+            sendandchecksumdata(portnumber,(unsigned char *)&value,2);
+        }
+        for (int x=0;x<3;++x) { // convert from
+            int value=(global.compassvector[x])>>8;
+            sendandchecksumdata(portnumber,(unsigned char *)&value,2);
+        }
+    } else if (command==MSP_STATUS) { // send attitude data
+        sendgoodheader(portnumber,10);
+        sendandchecksumint(portnumber,(global.timesliver*15)>>8); // convert from fixedpointnum to microseconds
+        sendandchecksumint(portnumber,lib_i2c_error_count); // i2c error count
+        sendandchecksumint(portnumber,CAPABILITES); // baro mag, gps, sonar
+        sendandchecksumdata(portnumber,(unsigned char *)&global.activecheckboxitems,4); // options1
+    } else if (command==MSP_MOTOR) { // send motor output data
       sendgoodheader(portnumber,16);
       for (int x=0;x<8;++x)
          {
@@ -350,30 +320,25 @@ void evaluatecommand(char portnumber,unsigned char *data)
 
 #define MAXPAYLOADSIZE 64
 
-void serialcheckportforaction(char portnumber)
-   {
-   int numcharsavailable;
-   while (numcharsavailable=lib_serial_numcharsavailable(portnumber))
-      {
-      if (serialreceivestate[portnumber]==SERIALSTATEGOTCOMMAND)
-         {
-         // this is the only state where we have to read more than one byte, so do this first, even though it's not first in the sequence of events
-         // we need to wait for data plus the checksum.  But don't process until we have enough space in the output buffer
-         int spaceneeded=40;
-         if (serialcommand[portnumber]==MSP_BOXNAMES) spaceneeded=strlen(checkboxnames)+10;
+void serialcheckportforaction(unsigned char portnumber) {
+    int numcharsavailable;
+    while ((numcharsavailable=lib_serial_numcharsavailable(portnumber))) {
+        if (serialreceivestate[portnumber]==SERIALSTATEGOTCOMMAND) {
+            // this is the only state where we have to read more than one byte, so do this first, even though it's not first in the sequence of events
+            // we need to wait for data plus the checksum.  But don't process until we have enough space in the output buffer
+            int spaceneeded=40;
+            if (serialcommand[portnumber]==MSP_BOXNAMES) spaceneeded=strlen(checkboxnames)+10;
 
-         if (numcharsavailable>serialdatasize[portnumber] && lib_serial_availableoutputbuffersize(portnumber)>=spaceneeded)
-            {
-            unsigned char data[MAXPAYLOADSIZE+1];
-            lib_serial_getdata(portnumber, data, serialdatasize[portnumber]+1);
+            if (numcharsavailable>serialdatasize[portnumber] && lib_serial_availableoutputbuffersize(portnumber)>=spaceneeded) {
+                unsigned char data[MAXPAYLOADSIZE+1];
+                lib_serial_getdata(portnumber, data, serialdatasize[portnumber]+1);
             for (int x=0;x<serialdatasize[portnumber];++x)
                serialchecksum[portnumber]^=data[x];
-            if (serialchecksum[portnumber]==data[serialdatasize[portnumber]])
-               {
+            if (serialchecksum[portnumber]==data[serialdatasize[portnumber]]) {
                evaluatecommand(portnumber,data);
-               }
-            serialreceivestate[portnumber]=SERIALSTATEIDLE;
             }
+            serialreceivestate[portnumber]=SERIALSTATEIDLE;
+        }
          else return;
          }
       else

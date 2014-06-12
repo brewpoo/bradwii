@@ -27,8 +27,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define OUTPUT_CHANNELC 0X03
 #define OUTPUT_CHANNELD 0X04
 
-void initoutputs();
+void init_outputs();
 //void setoutputs(unsigned int *values,char numvalues);
-void setoutput(unsigned char outputchannel, unsigned int value);
-void setmotoroutput(unsigned char motornum, unsigned char motorchannel,fixedpointnum fpvalue);
-void setallmotoroutputs(int value);
+void set_output(unsigned char outputchannel, unsigned int value);
+void set_motor_output(unsigned char motornum, unsigned char motorchannel,fixedpointnum fpvalue);
+void set_all_motor_outputs(int value);
+void set_all_servo_outputs(int value);
