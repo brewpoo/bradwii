@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 42;
+	objectVersion = 46;
 	objects = {
 
 /* Begin PBXFileReference section */
@@ -57,6 +57,8 @@
 		A2E82CA1168C978B00E4FE71 /* lib_serial.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lib_serial.h; path = "../Avr Libraries/lib_serial.h"; sourceTree = SOURCE_ROOT; };
 		A2E82EAD1690A20D00E4FE71 /* lib_fp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lib_fp.h; path = "../Avr Libraries/lib_fp.h"; sourceTree = SOURCE_ROOT; };
 		A2E82EAE1690A20D00E4FE71 /* lib_fp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = lib_fp.cpp; path = "../Avr Libraries/lib_fp.cpp"; sourceTree = SOURCE_ROOT; };
+		B2F0E4921947698D00340D08 /* aircraft.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = aircraft.h; sourceTree = "<group>"; };
+		B2F0E49319476C3B00340D08 /* aircraft.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = aircraft.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -91,6 +93,8 @@
 		A27328C014D9F0BB00E39B15 /* project files */ = {
 			isa = PBXGroup;
 			children = (
+				B2F0E4921947698D00340D08 /* aircraft.h */,
+				B2F0E49319476C3B00340D08 /* aircraft.cpp */,
 				A2D5C44B171771AE000E4300 /* options.h */,
 				A276EDB916CD2E21001CADD5 /* config.h */,
 				A276EDB616CD2E05001CADD5 /* defs.h */,
@@ -224,8 +228,11 @@
 /* Begin PBXProject section */
 		4079523D0CEA382200E202DC /* Project object */ = {
 			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0510;
+			};
 			buildConfigurationList = 4079523E0CEA382200E202DC /* Build configuration list for PBXProject "Project" */;
-			compatibilityVersion = "Xcode 2.4";
+			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -257,7 +264,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				DEVICE = atmega2560;
-				PATH = "$(PATH):$(PROJECT_DIR)/../Avr_Tools/bin:$(PROJECT_DIR)'/../Avr Libraries':$(PROJECT_DIR)";
+				PATH = "$(PATH):$(PROJECT_DIR)/../Avr_Tools/bin:$(PROJECT_DIR)'/../Avr Libraries':$(PROJECT_DIR):/Applications/Copter/Arduino.app/Contents/Resources/Java/hardware/tools/avr/bin/";
 			};
 			name = Release;
 		};
