@@ -49,20 +49,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //#define RX_CHANNEL_ORDER         PITCHINDEX,ROLLINDEX,THROTTLEINDEX,YAWINDEX,AUX1INDEX,AUX2INDEX,AUX3INDEX,AUX4INDEX,8,9,10,11 //For some Hitec/Sanwa/Others
 
 // uncomment to set the number of RX channels, otherwise it will default to what the control board/receiver can handle
-//#define RXNUMCHANNELS 8
+#define RXNUMCHANNELS 6
 
 // uncomment to allow arming and disarming with the sticks:
 // Arming and disarming only happen at low throttle
 // Uncomment the following two lines to allow arming using yaw
-//#define STICK_ARM STICK_COMMAND_YAW_HIGH
-//#define STICK_DISARM STICK_COMMAND_YAW_LOW
+#define STICK_ARM STICK_COMMAND_YAW_HIGH
+#define STICK_DISARM STICK_COMMAND_YAW_LOW
 
 // uncomment the following two lines to allow arming using yaw, roll, and pitch all at once
-#define STICK_ARM STICK_COMMAND_YAW_HIGH+STICK_COMMAND_ROLL_HIGH+STICK_COMMAND_PITCH_LOW
-#define STICK_DISARM STICK_COMMAND_YAW_LOW+STICK_COMMAND_ROLL_LOW+STICK_COMMAND_PITCH_LOW
+//#define STICK_ARM STICK_COMMAND_YAW_HIGH+STICK_COMMAND_ROLL_HIGH+STICK_COMMAND_PITCH_LOW
+//#define STICK_DISARM STICK_COMMAND_YAW_LOW+STICK_COMMAND_ROLL_LOW+STICK_COMMAND_PITCH_LOW
 
 // Choose an aircraft configuration (defaults to QUADX)
 //#define AIRCRAFT_CONFIGURATION QUADX
+#define AIRCRAFT_CONFIGURATION TRI
 
 // Choose which serial ports will be used to transfer data to a configuration device.
 // Multiple serial channels can be configured. (i.e. one for computer, one for bluetooth).
@@ -81,7 +82,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // Choose whether to include code for a GPS and set parameters for the GPS, otherwise it will default o what the control board come with
 //#define GPS_TYPE NO_GPS // select if no GPS is going to be used
 //#define GPS_TYPE I2C_GPS // select if an i2c gps is going to be used
-//#define GPS_TYPE SERIAL_GPS   // select if a serial GPS (NMEA) is going to be used
+#define GPS_TYPE SERIAL_GPS   // select if a serial GPS (NMEA) is going to be used
 //#define GPS_SERIAL_PORT 2
 //#define GPS_BAUD 115200
 
