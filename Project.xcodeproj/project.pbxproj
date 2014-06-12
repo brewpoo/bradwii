@@ -68,6 +68,7 @@
 			children = (
 				B2CF632D1949F12500992E65 /* Libraries */,
 				A27328C014D9F0BB00E39B15 /* Source */,
+				B2CF6357194A1E2000992E65 /* User Editable Files */,
 				B2CF63071949EEB200992E65 /* Makefile */,
 			);
 			sourceTree = "<group>";
@@ -89,7 +90,6 @@
 				B2CF63131949EEB200992E65 /* checkboxes.h */,
 				B2CF63121949EEB200992E65 /* compass.cpp */,
 				B2CF63111949EEB200992E65 /* compass.h */,
-				B2CF63101949EEB200992E65 /* config.h */,
 				B2CF630F1949EEB200992E65 /* defs.h */,
 				B2CF62F61949EEB200992E65 /* eeprom.cpp */,
 				B2CF630E1949EEB200992E65 /* eeprom.h */,
@@ -106,7 +106,6 @@
 				B2CF63021949EEB200992E65 /* output.h */,
 				B2CF63011949EEB200992E65 /* pilotcontrol.cpp */,
 				B2CF63001949EEB200992E65 /* pilotcontrol.h */,
-				B2CF62FF1949EEB200992E65 /* projectsettings.h */,
 				B2CF62FE1949EEB200992E65 /* rx.cpp */,
 				B2CF62FD1949EEB200992E65 /* rx.h */,
 				B2CF62FC1949EEB200992E65 /* serial.cpp */,
@@ -135,8 +134,17 @@
 				B2CF63541949F6F500992E65 /* lib_fp.cpp */,
 				B2CF63551949F6F500992E65 /* lib_digitalio.h */,
 				B2CF63561949F6F500992E65 /* lib_digitalio.cpp */,
+				B2CF62FF1949EEB200992E65 /* projectsettings.h */,
 			);
 			name = Libraries;
+			sourceTree = "<group>";
+		};
+		B2CF6357194A1E2000992E65 /* User Editable Files */ = {
+			isa = PBXGroup;
+			children = (
+				B2CF63101949EEB200992E65 /* config.h */,
+			);
+			name = "User Editable Files";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
