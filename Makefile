@@ -26,8 +26,8 @@ OBJECTS    = bradwii.o lib_usb.o rx.o serial.o output.o gyro.o accelerometer.o i
 
 #AVRDUDE = avrdude -v -v -v -v $(PROGRAMMER) -p $(DEVICE)
 AVRDUDE = avrdude -v $(PROGRAMMER) -p $(DEVICE) 
-LIBRARYPATH = '../../Avr Libraries/'
-COMPILE = avr-gcc -Wall -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE) -I "$(PROJECT_DIR)/project files" -I $(LIBRARYPATH) 
+LIBRARYPATH = './'
+COMPILE = avr-gcc -Wall -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE) -I "$(PROJECT_DIR)" -I $(LIBRARYPATH)
 
 # install: is called for the make and burn target
 # symbolic targets:
