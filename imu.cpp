@@ -63,193 +63,180 @@ fixedpointnum estimated_compass_vector[3]={FIXEDPOINTONE,0,0}; // start pointing
 #define ONE_OVER_ACC_COMPLIMENTARY_FILTER_TIME_PERIOD FIXEDPOINTCONSTANT(1.0/ACC_COMPLIMENTARY_FILTER_TIME_PERIOD)
 
 //fixedpointnum ; // convert from degrees to radians and include fudge factor
-fixedpointnum barotimeinterval=0;  // accumulated time between barometer reads
-fixedpointnum compasstimeinterval=0; // accumulated time between barometer reads
-fixedpointnum lastbarorawaltitude; // remember our last reading so we can calculate altitude velocity
+fixedpointnum baroTimeInterval=0;  // accumulated time between barometer reads
+fixedpointnum compassTimeInterval=0; // accumulated time between barometer reads
+fixedpointnum lastBaroRawAltitude; // remember our last reading so we can calculate altitude velocity
 
 // read the acc and gyro a bunch of times and get an average of how far off they are.
 // assumes the aircraft is sitting level and still.
-void calibrategyroandaccelerometer()
-   {
-   for (int x=0;x<3;++x)
-      {
-      usersettings.gyrocalibration[x]=0;
-      usersettings.acccalibration[x]=0;
-      }
+void calibrate_gyro_and_accelerometer() {
+    for (int x=0;x<3;++x) {
+        usersettings.gyrocalibration[x]=0;
+        usersettings.acccalibration[x]=0;
+    }
 
-   fixedpointnum totaltime=0;
+    fixedpointnum totaltime=0;
    
    // calibrate the gyro and acc
-   while (totaltime<4L<<(FIXEDPOINTSHIFT+TIMESLIVEREXTRASHIFT)) // 4 seconds
-      {
-      readgyro();
-      readacc();
-      global.acc_g_vector[ZINDEX]-=FIXEDPOINTONE; // vertical vector should be at 1 G
+   while (totaltime<4L<<(FIXEDPOINTSHIFT+TIMESLIVEREXTRASHIFT)) {
+       // 4 seconds
+       read_gyro();
+       read_acc();
+       global.correctedVectorGs[Z_INDEX]-=FIXEDPOINTONE; // vertical vector should be at 1 G
 
-      calculatetimesliver();
-      totaltime+=global.timesliver;
+       calculate_timesliver();
+       totaltime+=global.timesliver;
       
-      for (int x=0;x<3;++x)
-         {
-         lib_fp_lowpassfilter(&usersettings.gyrocalibration[x],-global.gyrorate[x],global.timesliver,FIXEDPOINTONEOVERONE,TIMESLIVEREXTRASHIFT);
-         lib_fp_lowpassfilter(&usersettings.acccalibration[x],-global.acc_g_vector[x],global.timesliver,FIXEDPOINTONEOVERONE,TIMESLIVEREXTRASHIFT);
-         }
-      }
+       for (int x=0;x<3;++x) {
+           lib_fp_lowpassfilter(&usersettings.gyrocalibration[x],-global.gyrorate[x],global.timesliver,FIXEDPOINTONEOVERONE,TIMESLIVEREXTRASHIFT);
+           lib_fp_lowpassfilter(&usersettings.acccalibration[x],-global.correctedVectorGs[x],global.timesliver,FIXEDPOINTONEOVERONE,TIMESLIVEREXTRASHIFT);
+       }
    }
+}
 
-void initimu()
-   {
-   // calibrate every time if we dont load any data from eeprom
-   if (global.usersettingsfromeeprom==0) calibrategyroandaccelerometer();
+void init_imu() {
+    // calibrate every time if we dont load any data from eeprom
+    if (global.userSettingsFromEeprom==0) calibrate_gyro_and_accelerometer();
 
-   global.estimateddownvector[XINDEX]=0;
-   global.estimateddownvector[YINDEX]=0;
-   global.estimateddownvector[ZINDEX]=FIXEDPOINTONE;
+    global.estimatedDownVector[X_INDEX]=0;
+    global.estimatedDownVector[Y_INDEX]=0;
+    global.estimatedDownVector[Z_INDEX]=FIXEDPOINTONE;
    
-   global.estimatedwestvector[XINDEX]=FIXEDPOINTONE;
-   global.estimatedwestvector[YINDEX]=0;
-   global.estimatedwestvector[ZINDEX]=0;
+    global.estimatedWestVector[X_INDEX]=FIXEDPOINTONE;
+    global.estimatedWestVector[Y_INDEX]=0;
+    global.estimatedWestVector[Z_INDEX]=0;
    
-   lastbarorawaltitude=global.altitude=global.barorawaltitude;      
+    lastBaroRawAltitude=global.altitude=global.baroRawAltitude;
 
-   global.altitudevelocity=0;
-   
-   }
+    global.altitudeVelocity=0;
+}
 
 //fixedpointnum totalrate[3]={0};
 //fixedpointnum timesincezerocrossing[3]={0};
 //char gyropositive[3]={0};
 
-void imucalculateestimatedattitude()
-   {
-   readgyro();
-   readacc();
+void imu_calculate_estimated_attitude() {
+    read_gyro();
+    read_acc();
 
-   // correct the gyro and acc readings to remove error      
-   for (int x=0;x<3;++x)
-      {
-      global.gyrorate[x]=global.gyrorate[x]+usersettings.gyrocalibration[x];
-      global.acc_g_vector[x]=global.acc_g_vector[x]+usersettings.acccalibration[x];
-      }
+    // correct the gyro and acc readings to remove error
+    for (int x=0;x<3;++x) {
+        global.gyrorate[x]=global.gyrorate[x]+usersettings.gyrocalibration[x];
+        global.correctedVectorGs[x]=global.correctedVectorGs[x]+usersettings.acccalibration[x];
+    }
 
-   // calculate how many degrees we have rotated around each axis.  Keep in mind that timesliver is
-   // shifted TIMESLIVEREXTRASHIFT bits to the left, so our delta angles will be as well.  This is
-   // good because they are generally very small angles;
+    // calculate how many degrees we have rotated around each axis.  Keep in mind that timesliver is
+    // shifted TIMESLIVEREXTRASHIFT bits to the left, so our delta angles will be as well.  This is
+    // good because they are generally very small angles;
    
-   // create a multiplier that will include timesliver and a conversion from degrees to radians
-   // we need radians for small angle approximation
-   fixedpointnum multiplier=lib_fp_multiply(global.timesliver,FIXEDPOINTPIOVER180);
+    // create a multiplier that will include timesliver and a conversion from degrees to radians
+    // we need radians for small angle approximation
+    fixedpointnum multiplier=lib_fp_multiply(global.timesliver,FIXEDPOINTPIOVER180);
 
-   fixedpointnum rolldeltaangle=lib_fp_multiply(global.gyrorate[ROLLINDEX],multiplier);
-   fixedpointnum pitchdeltaangle=lib_fp_multiply(global.gyrorate[PITCHINDEX],multiplier);
-   fixedpointnum yawdeltaangle=lib_fp_multiply(global.gyrorate[YAWINDEX],multiplier);
+    fixedpointnum rolldeltaangle=lib_fp_multiply(global.gyrorate[ROLL_INDEX],multiplier);
+    fixedpointnum pitchdeltaangle=lib_fp_multiply(global.gyrorate[PITCH_INDEX],multiplier);
+    fixedpointnum yawdeltaangle=lib_fp_multiply(global.gyrorate[YAW_INDEX],multiplier);
 
-   rotatevectorwithsmallangles(global.estimateddownvector,rolldeltaangle,pitchdeltaangle,yawdeltaangle);
-   rotatevectorwithsmallangles(global.estimatedwestvector,rolldeltaangle,pitchdeltaangle,yawdeltaangle);
+    rotate_vector_with_small_angles(global.estimatedDownVector,rolldeltaangle,pitchdeltaangle,yawdeltaangle);
+    rotate_vector_with_small_angles(global.estimatedWestVector,rolldeltaangle,pitchdeltaangle,yawdeltaangle);
 
-   // if the accellerometer's gravity vector is close to one G, use a complimentary filter
-   // to gently adjust our estimated g vector so that it stays in line with the real one.
-   // If the magnitude of the vector is not near one G, then it will be difficult to determine
-   // which way is down, so we just skip it.
-   fixedpointnum accmagnitudesquared=lib_fp_multiply(global.acc_g_vector[XINDEX],global.acc_g_vector[XINDEX])+lib_fp_multiply(global.acc_g_vector[YINDEX],global.acc_g_vector[YINDEX])+lib_fp_multiply(global.acc_g_vector[ZINDEX],global.acc_g_vector[ZINDEX]);
+    // if the accellerometer's gravity vector is close to one G, use a complimentary filter
+    // to gently adjust our estimated g vector so that it stays in line with the real one.
+    // If the magnitude of the vector is not near one G, then it will be difficult to determine
+    // which way is down, so we just skip it.
+    fixedpointnum accmagnitudesquared=lib_fp_multiply(global.correctedVectorGs[X_INDEX],global.correctedVectorGs[X_INDEX])+lib_fp_multiply(global.correctedVectorGs[Y_INDEX],global.correctedVectorGs[Y_INDEX])+lib_fp_multiply(global.correctedVectorGs[Z_INDEX],global.correctedVectorGs[Z_INDEX]);
 
-   if (accmagnitudesquared>MINACCMAGNITUDESQUARED && accmagnitudesquared<MAXACCMAGNITUDESQUARED)
-      {
-      global.stable=1;
-      for (int x=0;x<3;++x)
-         {
-         lib_fp_lowpassfilter(&global.estimateddownvector[x], global.acc_g_vector[x],global.timesliver, ONE_OVER_ACC_COMPLIMENTARY_FILTER_TIME_PERIOD,TIMESLIVEREXTRASHIFT);
-         }
-      }
-   else
-      global.stable=0;
+    if (accmagnitudesquared>MINACCMAGNITUDESQUARED && accmagnitudesquared<MAXACCMAGNITUDESQUARED) {
+        global.stable=1;
+        for (int x=0;x<3;++x) {
+            lib_fp_lowpassfilter(&global.estimatedDownVector[x], global.correctedVectorGs[x],global.timesliver, ONE_OVER_ACC_COMPLIMENTARY_FILTER_TIME_PERIOD,TIMESLIVEREXTRASHIFT);
+        }
+    } else global.stable=0;
 
-   compasstimeinterval+=global.timesliver;
+    compassTimeInterval+=global.timesliver;
 
 #if (COMPASS_TYPE!=NO_COMPASS)
-   int gotnewcompassreading=readcompass();
+    int gotNewCompassReading=read_compass();
       
-   if (gotnewcompassreading)
-      {
-      // use the compass to correct the yaw in our estimated attitude.
-      // the compass vector points somewhat north, but it also points down more than north where I live, so we can't
-      // get the yaw directly from the compass vector.  Instead, we have to take a cross product of
-      // the gravity vector and the compass vector, which should point west
-      fixedpointnum westvector[3];
+    if (gotNewCompassReading) {
+        // use the compass to correct the yaw in our estimated attitude.
+        // the compass vector points somewhat north, but it also points down more than north where I live, so we can't
+        // get the yaw directly from the compass vector.  Instead, we have to take a cross product of
+        // the gravity vector and the compass vector, which should point west
+        fixedpointnum westVector[3];
       
-      vectorcrossproduct(global.compassvector,global.estimateddownvector,westvector);
+        vector_cross_product(global.compassVector,global.estimatedDownVector,westVector);
 
-      // use the actual compass reading to slowly adjust our estimated west vector
-      for (int x=0;x<3;++x)
-         {
-         lib_fp_lowpassfilter(&global.estimatedwestvector[x], westvector[x],compasstimeinterval>>TIMESLIVEREXTRASHIFT, ONE_OVER_ACC_COMPLIMENTARY_FILTER_TIME_PERIOD,0);
-         }
-      compasstimeinterval=0;
-      }
+        // use the actual compass reading to slowly adjust our estimated west vector
+        for (int x=0;x<3;++x) {
+            lib_fp_lowpassfilter(&global.estimatedWestVector[x], westVector[x],compassTimeInterval>>TIMESLIVEREXTRASHIFT, ONE_OVER_ACC_COMPLIMENTARY_FILTER_TIME_PERIOD,0);
+        }
+        compassTimeInterval=0;
+    }
 #else
-   if (compasstimeinterval>(6553L<<TIMESLIVEREXTRASHIFT)) // 10 hz
-      { // we aren't using the comopass
-      // we need to make sure the west vector stays around unit length and stays perpendicular to the down vector
-      // first make it perpendicular by crossing it with the down vector and then back again
-      fixedpointnum vector[3];
+    if (compassTimeInterval>(6553L<<TIMESLIVEREXTRASHIFT)) {
+        // 10 hz
+        // we aren't using the comopass
+        // we need to make sure the west vector stays around unit length and stays perpendicular to the down vector
+        // first make it perpendicular by crossing it with the down vector and then back again
+        fixedpointnum vector[3];
       
-      vectorcrossproduct(global.estimatedwestvector, global.estimateddownvector,vector);
-      vectorcrossproduct(global.estimateddownvector,vector, global.estimatedwestvector);
+        vector_cross_product(global.estimatedWestVector, global.estimatedDownVector,vector);
+        vector_cross_product(global.estimatedDownVector,vector, global.estimatedWestVector);
 
-      normalizevector(global.estimatedwestvector);
+        normalize_vector(global.estimatedWestVector);
       
-      compasstimeinterval=0;
-      }
+        compassTimeInterval=0;
+    }
 #endif
 
 #if (BAROMETER_TYPE!=NO_BAROMETER)
-   barotimeinterval+=global.timesliver;
+    baroTimeInterval+=global.timesliver;
    
-   // Integrate the accelerometer to determine the altitude velocity
-   // Integrate again to determine position
-//normalizevector(global.estimateddownvector);
+    // Integrate the accelerometer to determine the altitude velocity
+    // Integrate again to determine position
+    //normalize_vector(global.estimatedDownVector);
 
-   fixedpointnum verticalacceleration=lib_fp_multiply(vectordotproduct(global.acc_g_vector, global.estimateddownvector)-FIXEDPOINTONE,FIXEDPOINTCONSTANT(9.8));
-   global.altitudevelocity+=(lib_fp_multiply(verticalacceleration>>TIMESLIVEREXTRASHIFT, global.timesliver));
-   global.altitude+=(lib_fp_multiply(global.altitudevelocity>>TIMESLIVEREXTRASHIFT, global.timesliver));
+   fixedpointnum verticalacceleration=lib_fp_multiply(vector_dot_product(global.correctedVectorGs, global.estimatedDownVector)-FIXEDPOINTONE,FIXEDPOINTCONSTANT(9.8));
+   global.altitudeVelocity+=(lib_fp_multiply(verticalacceleration>>TIMESLIVEREXTRASHIFT, global.timesliver));
+   global.altitude+=(lib_fp_multiply(global.altitudeVelocity>>TIMESLIVEREXTRASHIFT, global.timesliver));
 
-   if (readbaro())
-      { // we got a new baro reading
-      fixedpointnum baroaltitudechange=global.barorawaltitude-lastbarorawaltitude;
+    if (read_baro()) {
+        // we got a new baro reading
+        fixedpointnum baroaltitudechange=global.baroRawAltitude-lastBaroRawAltitude;
       
-      // filter out errant baro readings.  I don't know why I need to do this, but every once in a while the baro
-      // will give a reading of 3000 meters when it should read 150 meters.
-      if (lib_fp_abs(baroaltitudechange)<FIXEDPOINTCONSTANT(500))
-         {
-         // Use the baro reading to adjust the altitude over time (basically a complimentary filter)
-         lib_fp_lowpassfilter(&global.altitude, global.barorawaltitude,barotimeinterval>>TIMESLIVEREXTRASHIFT, FIXEDPOINTONEOVERONE,0);
+        // filter out errant baro readings.  I don't know why I need to do this, but every once in a while the baro
+        // will give a reading of 3000 meters when it should read 150 meters.
+        if (lib_fp_abs(baroaltitudechange)<FIXEDPOINTCONSTANT(500)) {
+            // Use the baro reading to adjust the altitude over time (basically a complimentary filter)
+            lib_fp_lowpassfilter(&global.altitude, global.baroRawAltitude,baroTimeInterval>>TIMESLIVEREXTRASHIFT, FIXEDPOINTONEOVERONE,0);
 
-         // Use the change in barometer readings to get an altitude velocity.  Use this to adjust the altitude velocity
-         // over time (basically a complimentary filter).
-         // We don't want to divide by the time interval to get velocity (divide is expensive) to then turn around and
-         // multiply by the same time interval. So the following is the same as the lib_fp_lowpassfilter code
-         // except we eliminate the multiply.
-         fixedpointnum fraction=lib_fp_multiply(barotimeinterval>>TIMESLIVEREXTRASHIFT,FIXEDPOINTONEOVERONEHALF);
-         global.altitudevelocity=(baroaltitudechange+lib_fp_multiply((FIXEDPOINTONE)-fraction,global.altitudevelocity));
+            // Use the change in barometer readings to get an altitude velocity.  Use this to adjust the altitude velocity
+            // over time (basically a complimentary filter).
+            // We don't want to divide by the time interval to get velocity (divide is expensive) to then turn around and
+            // multiply by the same time interval. So the following is the same as the lib_fp_lowpassfilter code
+            // except we eliminate the multiply.
+            fixedpointnum fraction=lib_fp_multiply(baroTimeInterval>>TIMESLIVEREXTRASHIFT,FIXEDPOINTONEOVERONEHALF);
+            global.altitudeVelocity=(baroaltitudechange+lib_fp_multiply((FIXEDPOINTONE)-fraction,global.altitudeVelocity));
       
-         lastbarorawaltitude=global.barorawaltitude;
-         barotimeinterval=0;
-         }
-      }
+            lastBaroRawAltitude=global.baroRawAltitude;
+            baroTimeInterval=0;
+        }
+    }
 #endif   
       
-   // convert our vectors to euler angles
-   global.currentestimatedeulerattitude[ROLLINDEX]  =  lib_fp_atan2(global.estimateddownvector[XINDEX] , global.estimateddownvector[ZINDEX]) ;
-   if (lib_fp_abs(global.currentestimatedeulerattitude[ROLLINDEX])>FIXEDPOINT45 && lib_fp_abs(global.currentestimatedeulerattitude[ROLLINDEX])<FIXEDPOINT135) 
-      global.currentestimatedeulerattitude[PITCHINDEX] = lib_fp_atan2(global.estimateddownvector[YINDEX] , lib_fp_abs(global.estimateddownvector[XINDEX]));
-   else 
-      global.currentestimatedeulerattitude[PITCHINDEX] = lib_fp_atan2(global.estimateddownvector[YINDEX] , global.estimateddownvector[ZINDEX]);
+    // convert our vectors to euler angles
+    global.currentEstimatedEulerAttitude[ROLL_INDEX]  =  lib_fp_atan2(global.estimatedDownVector[X_INDEX] , global.estimatedDownVector[Z_INDEX]) ;
+    if (lib_fp_abs(global.currentEstimatedEulerAttitude[ROLL_INDEX])>FIXEDPOINT45 && lib_fp_abs(global.currentEstimatedEulerAttitude[ROLL_INDEX])<FIXEDPOINT135) {
+        global.currentEstimatedEulerAttitude[PITCH_INDEX] = lib_fp_atan2(global.estimatedDownVector[Y_INDEX] , lib_fp_abs(global.estimatedDownVector[X_INDEX]));
+    } else {
+        global.currentEstimatedEulerAttitude[PITCH_INDEX] = lib_fp_atan2(global.estimatedDownVector[Y_INDEX] , global.estimatedDownVector[Z_INDEX]);
+    }
 
-   fixedpointnum xvalue=global.estimatedwestvector[XINDEX];
+    fixedpointnum xvalue=global.estimatedWestVector[X_INDEX];
    
-   if (global.estimateddownvector[ZINDEX]<1)
-      xvalue=-xvalue;
+    if (global.estimatedDownVector[Z_INDEX]<1) xvalue=-xvalue;
       
-   global.currentestimatedeulerattitude[YAWINDEX] = lib_fp_atan2(global.estimatedwestvector[YINDEX],xvalue)+FP_MAG_DECLINATION_DEGREES;
-   lib_fp_constrain180(&global.currentestimatedeulerattitude[YAWINDEX]);
-   }
+    global.currentEstimatedEulerAttitude[YAW_INDEX] = lib_fp_atan2(global.estimatedWestVector[Y_INDEX],xvalue)+FP_MAG_DECLINATION_DEGREES;
+    lib_fp_constrain180(&global.currentEstimatedEulerAttitude[YAW_INDEX]);
+}

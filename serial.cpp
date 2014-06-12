@@ -45,7 +45,7 @@ extern usersettingsstruct usersettings;
 extern const char checkboxnames[];
 extern unsigned int lib_i2c_error_count;
 
-void serialinit() {
+void serial_init() {
 #if (MULTIWII_CONFIG_SERIAL_PORTS & SERIALPORT0)
    lib_serial_initport(0,SERIAL_0_BAUD);
 #endif
@@ -86,253 +86,253 @@ unsigned char serialcommand[5];
 unsigned char serialdatasize[5];
 unsigned char serialchecksum[5];
 
-void sendandchecksumcharacter(unsigned char portnumber,unsigned char c) {
+void send_and_checksum_character(unsigned char portnumber,unsigned char c) {
     lib_serial_sendchar(portnumber,c);
     serialchecksum[portnumber]^=c;
 }
    
-void sendandchecksumdata(char portnumber,unsigned char *data,char length) {
+void send_and_checksum_data(char portnumber,unsigned char *data,char length) {
    for (int x=0;x<length;++x)
-      sendandchecksumcharacter(portnumber,data[x]);
+      send_and_checksum_character(portnumber,data[x]);
 }
    
-void sendandchecksumint(char portnumber,unsigned int value) {
-   sendandchecksumdata(portnumber,(unsigned char *)&value,2);
+void send_and_checksum_int(char portnumber,unsigned int value) {
+   send_and_checksum_data(portnumber,(unsigned char *)&value,2);
 }
    
-void sendandchecksumlong(char portnumber,unsigned long value) {
-   sendandchecksumdata(portnumber,(unsigned char *)&value,4);
+void send_and_checksum_long(char portnumber,unsigned long value) {
+   send_and_checksum_data(portnumber,(unsigned char *)&value,4);
 }
    
-void sendgoodheader(unsigned char portnumber,unsigned char size) {
+void send_good_header(unsigned char portnumber,unsigned char size) {
    lib_serial_sendchar(portnumber,'$');
    lib_serial_sendchar(portnumber,'M');
    lib_serial_sendchar(portnumber,'>');
    lib_serial_sendchar(portnumber,size);
    serialchecksum[portnumber]=size;
-   sendandchecksumcharacter(portnumber,serialcommand[portnumber]);
+   send_and_checksum_character(portnumber,serialcommand[portnumber]);
 }
    
-void senderrorheader(unsigned char portnumber) {
+void send_error_header(unsigned char portnumber) {
    lib_serial_sendchar(portnumber,'$');
    lib_serial_sendchar(portnumber,'M');
    lib_serial_sendchar(portnumber,'!');
    lib_serial_sendchar(portnumber,0);
    serialchecksum[portnumber]=0;
-   sendandchecksumcharacter(portnumber,serialcommand[portnumber]);
+   send_and_checksum_character(portnumber,serialcommand[portnumber]);
 }
    
-void evaluatecommand(unsigned char portnumber,unsigned char *data) {
+void evaluate_command(unsigned char portnumber,unsigned char *data) {
     unsigned char command=serialcommand[portnumber];
     
     
     if (command==MSP_IDENT) { // send rx data
-        sendgoodheader(portnumber,7);
-        sendandchecksumcharacter(portnumber,VERSION);
-        sendandchecksumcharacter(portnumber,AIRCRAFT_CONFIGURATION);
-        sendandchecksumcharacter(portnumber,MSP_VERSION);
-        for (int x=0;x<4;++x) sendandchecksumcharacter(portnumber,0); // 32 bit "capability"
+        send_good_header(portnumber,7);
+        send_and_checksum_character(portnumber,VERSION);
+        send_and_checksum_character(portnumber,AIRCRAFT_CONFIGURATION);
+        send_and_checksum_character(portnumber,MSP_VERSION);
+        for (int x=0;x<4;++x) send_and_checksum_character(portnumber,0); // 32 bit "capability"
     } else if (command==MSP_RC) { // send rx data
-        sendgoodheader(portnumber,16);
+        send_good_header(portnumber,16);
         for (int x=0;x<8;++x) {
             int value=0;
-            if (x<RXNUMCHANNELS) value=((global.rxvalues[x]*500L)>>FIXEDPOINTSHIFT)+1500;
+            if (x<RXNUMCHANNELS) value=((global.rxValues[x]*500L)>>FIXEDPOINTSHIFT)+1500;
 
-            sendandchecksumdata(portnumber,(unsigned char *)&value,2);
+            send_and_checksum_data(portnumber,(unsigned char *)&value,2);
         }
     } else if (command==MSP_ATTITUDE) { // send attitude data
-        sendgoodheader(portnumber,6);
+        send_good_header(portnumber,6);
         // convert our estimated gravity vector into roll and pitch angles
         int value;
-        value=(global.currentestimatedeulerattitude[0]*10)>>FIXEDPOINTSHIFT;
-        sendandchecksumdata(portnumber,(unsigned char *)&value,2);
-        value=(global.currentestimatedeulerattitude[1]*10)>>FIXEDPOINTSHIFT;
-        sendandchecksumdata(portnumber,(unsigned char *)&value,2);
-        value=(global.currentestimatedeulerattitude[2])>>FIXEDPOINTSHIFT;
-        sendandchecksumdata(portnumber,(unsigned char *)&value,2);
+        value=(global.currentEstimatedEulerAttitude[0]*10)>>FIXEDPOINTSHIFT;
+        send_and_checksum_data(portnumber,(unsigned char *)&value,2);
+        value=(global.currentEstimatedEulerAttitude[1]*10)>>FIXEDPOINTSHIFT;
+        send_and_checksum_data(portnumber,(unsigned char *)&value,2);
+        value=(global.currentEstimatedEulerAttitude[2])>>FIXEDPOINTSHIFT;
+        send_and_checksum_data(portnumber,(unsigned char *)&value,2);
     } else if (command==MSP_ALTITUDE) { // send attitude data
-        sendgoodheader(portnumber,4);
+        send_good_header(portnumber,4);
         fixedpointnum fp=(global.altitude*25)>>(FIXEDPOINTSHIFT-2);
-        sendandchecksumdata(portnumber,(unsigned char *)&fp,4);
+        send_and_checksum_data(portnumber,(unsigned char *)&fp,4);
     } else if (command==MSP_MAG_CALIBRATION) { // send attitude data
-        if (!global.armed) calibratecompass();
-        sendgoodheader(portnumber,0);
+        if (!global.armed) calibrate_compass();
+        send_good_header(portnumber,0);
     } else if (command==MSP_ACC_CALIBRATION) { // send attitude data
-        if (!global.armed) calibrategyroandaccelerometer();
-        sendgoodheader(portnumber,0);
+        if (!global.armed) calibrate_gyro_and_accelerometer();
+        send_good_header(portnumber,0);
     } else if (command==MSP_RAW_IMU) { // send attitude data
-        sendgoodheader(portnumber,18);
+        send_good_header(portnumber,18);
         for (int x=0;x<3;++x) { // convert from g's to what multiwii uses
-            int value=global.acc_g_vector[x]>>8;
-            sendandchecksumdata(portnumber,(unsigned char *)&value,2);
+            int value=global.correctedVectorGs[x]>>8;
+            send_and_checksum_data(portnumber,(unsigned char *)&value,2);
         }
         for (int x=0;x<3;++x) { // convert from degrees per second to /8000
             int value=(global.gyrorate[x])>>14; // this is aproximate
-            sendandchecksumdata(portnumber,(unsigned char *)&value,2);
+            send_and_checksum_data(portnumber,(unsigned char *)&value,2);
         }
         for (int x=0;x<3;++x) { // convert from
-            int value=(global.compassvector[x])>>8;
-            sendandchecksumdata(portnumber,(unsigned char *)&value,2);
+            int value=(global.compassVector[x])>>8;
+            send_and_checksum_data(portnumber,(unsigned char *)&value,2);
         }
     } else if (command==MSP_STATUS) { // send attitude data
-        sendgoodheader(portnumber,10);
-        sendandchecksumint(portnumber,(global.timesliver*15)>>8); // convert from fixedpointnum to microseconds
-        sendandchecksumint(portnumber,lib_i2c_error_count); // i2c error count
-        sendandchecksumint(portnumber,CAPABILITES); // baro mag, gps, sonar
-        sendandchecksumdata(portnumber,(unsigned char *)&global.activecheckboxitems,4); // options1
+        send_good_header(portnumber,10);
+        send_and_checksum_int(portnumber,(global.timesliver*15)>>8); // convert from fixedpointnum to microseconds
+        send_and_checksum_int(portnumber,lib_i2c_error_count); // i2c error count
+        send_and_checksum_int(portnumber,CAPABILITES); // baro mag, gps, sonar
+        send_and_checksum_data(portnumber,(unsigned char *)&global.activeCheckboxItems,4); // options1
     } else if (command==MSP_MOTOR) {
         // send motor output data
-        sendgoodheader(portnumber,16);
+        send_good_header(portnumber,16);
         for (int x=0;x<8;++x) {
-            if (x < NUMMOTORS) {
-                sendandchecksumint(portnumber,global.motoroutputvalue[x]); // current motor value
+            if (x < NUM_MOTORS) {
+                send_and_checksum_int(portnumber,global.motorOutputValue[x]); // current motor value
             } else {
-                sendandchecksumint(portnumber,0);
+                send_and_checksum_int(portnumber,0);
             }
         }
     } else if (command==MSP_SERVO) {
         // send servo output data
-        sendgoodheader(portnumber,16);
+        send_good_header(portnumber,16);
         for (int x=0;x<8;++x) {
-            if (x < NUMSERVOS) {
-                sendandchecksumint(portnumber,global.servooutputvalue[x]); // current servo value
+            if (x < NUM_SERVOS) {
+                send_and_checksum_int(portnumber,global.servoOutputValue[x]); // current servo value
             } else {
-                sendandchecksumint(portnumber,0);
+                send_and_checksum_int(portnumber,0);
             }
         }
     } else if (command==MSP_PID) {
         // send pid data
-      sendgoodheader(portnumber,3*NUMPIDITEMS);
-      for (int x=0;x<NUMPIDITEMS;++x)
+      send_good_header(portnumber,3*NUM_PID_ITEMS);
+      for (int x=0;x<NUM_PID_ITEMS;++x)
          {
-         if (x==ALTITUDEINDEX)
-            sendandchecksumcharacter(portnumber,usersettings.pid_pgain[x]>>7);
-         else if (x==NAVIGATIONINDEX)
-            sendandchecksumcharacter(portnumber,usersettings.pid_pgain[x]>>11);
+         if (x==ALTITUDE_INDEX)
+            send_and_checksum_character(portnumber,usersettings.pid_pgain[x]>>7);
+         else if (x==NAVIGATION_INDEX)
+            send_and_checksum_character(portnumber,usersettings.pid_pgain[x]>>11);
          else
-            sendandchecksumcharacter(portnumber,usersettings.pid_pgain[x]>>3);
-         sendandchecksumcharacter(portnumber,usersettings.pid_igain[x]);
-         if (x==NAVIGATIONINDEX)
-            sendandchecksumcharacter(portnumber,usersettings.pid_dgain[x]>>8);
-         else if (x==ALTITUDEINDEX)
-            sendandchecksumcharacter(portnumber,usersettings.pid_dgain[x]>>9);
+            send_and_checksum_character(portnumber,usersettings.pid_pgain[x]>>3);
+         send_and_checksum_character(portnumber,usersettings.pid_igain[x]);
+         if (x==NAVIGATION_INDEX)
+            send_and_checksum_character(portnumber,usersettings.pid_dgain[x]>>8);
+         else if (x==ALTITUDE_INDEX)
+            send_and_checksum_character(portnumber,usersettings.pid_dgain[x]>>9);
          else
-            sendandchecksumcharacter(portnumber,usersettings.pid_dgain[x]>>2);
+            send_and_checksum_character(portnumber,usersettings.pid_dgain[x]>>2);
          }
       }
    else if (command==MSP_SET_PID)
       {
-      for (int x=0;x<NUMPIDITEMS;++x)
+      for (int x=0;x<NUM_PID_ITEMS;++x)
          {
-         if (x==ALTITUDEINDEX)
+         if (x==ALTITUDE_INDEX)
             usersettings.pid_pgain[x]=((fixedpointnum)(*data++))<<7;
-         else if (x==NAVIGATIONINDEX)
+         else if (x==NAVIGATION_INDEX)
             usersettings.pid_pgain[x]=((fixedpointnum)(*data++))<<11;
          else
             usersettings.pid_pgain[x]=((fixedpointnum)(*data++))<<3;
          usersettings.pid_igain[x]=((fixedpointnum)(*data++));
-         if (x==NAVIGATIONINDEX)
+         if (x==NAVIGATION_INDEX)
             usersettings.pid_dgain[x]=((fixedpointnum)(*data++))<<8;
-         else if (x==ALTITUDEINDEX)
+         else if (x==ALTITUDE_INDEX)
             usersettings.pid_dgain[x]=((fixedpointnum)(*data++))<<9;
          else
             usersettings.pid_dgain[x]=((fixedpointnum)(*data++))<<2;
 
          }
 // while testing, make roll pid equal to pitch pid so I only have to change one thing.
-//usersettings.pid_pgain[ROLLINDEX]=usersettings.pid_pgain[PITCHINDEX];
-//usersettings.pid_igain[ROLLINDEX]=usersettings.pid_igain[PITCHINDEX];
-//usersettings.pid_dgain[ROLLINDEX]=usersettings.pid_dgain[PITCHINDEX];
-      sendgoodheader(portnumber,0);
+//usersettings.pid_pgain[ROLL_INDEX]=usersettings.pid_pgain[PITCH_INDEX];
+//usersettings.pid_igain[ROLL_INDEX]=usersettings.pid_igain[PITCH_INDEX];
+//usersettings.pid_dgain[ROLL_INDEX]=usersettings.pid_dgain[PITCH_INDEX];
+      send_good_header(portnumber,0);
       }
    else if (command==MSP_DEBUG)
       { // send attitude data
-      sendgoodheader(portnumber,8);
+      send_good_header(portnumber,8);
       for (int x=0;x<4;++x)
          { // convert from g's to what multiwii uses
-         int value=global.debugvalue[x];
-         sendandchecksumdata(portnumber,(unsigned char *)&value,2);
+         int value=global.debugValue[x];
+         send_and_checksum_data(portnumber,(unsigned char *)&value,2);
          }
       }
    else if (command==MSP_BOXNAMES)
       { // send names of checkboxes
       char length=strlen(checkboxnames);
-      sendgoodheader(portnumber,length);
-      sendandchecksumdata(portnumber,(unsigned char *)checkboxnames,length);
+      send_good_header(portnumber,length);
+      send_and_checksum_data(portnumber,(unsigned char *)checkboxnames,length);
       }
    else if (command==MSP_SET_BOX)
       { // receive check box settings
-      unsigned char *ptr=(unsigned char *)usersettings.checkboxconfiguration;
-      for (int x=0;x<NUMCHECKBOXES*2;++x)
+      unsigned char *ptr=(unsigned char *)usersettings.checkboxConfiguration;
+      for (int x=0;x<NUM_CHECKBOXES*2;++x)
          {
          *ptr++=*data++;
          }
       }
    else if (command==MSP_BOX)
       { // send check box settings
-      sendgoodheader(portnumber,NUMCHECKBOXES*2);
-      sendandchecksumdata(portnumber,(unsigned char *)usersettings.checkboxconfiguration,NUMCHECKBOXES*2);
+      send_good_header(portnumber,NUM_CHECKBOXES*2);
+      send_and_checksum_data(portnumber,(unsigned char *)usersettings.checkboxConfiguration,NUM_CHECKBOXES*2);
       }
    else if (command==MSP_RESET_CONF)
       { // reset user settings
-      sendgoodheader(portnumber,0);
-      defaultusersettings();
+      send_good_header(portnumber,0);
+      default_user_settings();
       }
    else if (command==MSP_EEPROM_WRITE)
       { // reset user settings
-      sendgoodheader(portnumber,0);
-      if (!global.armed) writeusersettingstoeeprom();
+      send_good_header(portnumber,0);
+      if (!global.armed) write_user_settings_to_eeprom();
       }
    else if (command==MSP_RAW_GPS)
       { // reset user settings
-      sendgoodheader(portnumber,14);
-      sendandchecksumcharacter(portnumber,0); // gps fix
-      sendandchecksumcharacter(portnumber, global.gps_num_satelites);
-      sendandchecksumlong(portnumber,lib_fp_multiply(global.gps_current_latitude,156250L)); //156250L is 10,000,000L>>LATLONGEXTRASHIFT); 
-      sendandchecksumlong(portnumber,lib_fp_multiply(global.gps_current_longitude,156250L)); 
-      sendandchecksumint(portnumber,global.gps_current_altitude>>FIXEDPOINTSHIFT); // gps altitude
-      sendandchecksumint(portnumber,(global.gps_current_speed*100)>>FIXEDPOINTSHIFT); // gps speed
+      send_good_header(portnumber,14);
+      send_and_checksum_character(portnumber,0); // gps fix
+      send_and_checksum_character(portnumber, global.gpsNumSatelites);
+      send_and_checksum_long(portnumber,lib_fp_multiply(global.gpsCurrentLatitude,156250L)); //156250L is 10,000,000L>>LATLONGEXTRASHIFT); 
+      send_and_checksum_long(portnumber,lib_fp_multiply(global.gpsCurrentLongitude,156250L)); 
+      send_and_checksum_int(portnumber,global.gpsCurrentAltitude>>FIXEDPOINTSHIFT); // gps altitude
+      send_and_checksum_int(portnumber,(global.gpsCurrentSpeed*100)>>FIXEDPOINTSHIFT); // gps speed
       }
    else if (command==MSP_COMP_GPS)
       { // reset user settings
-      sendgoodheader(portnumber,5);
-      sendandchecksumint(portnumber,(global.navigation_distance)>>FIXEDPOINTSHIFT); 
-      sendandchecksumint(portnumber,(global.navigation_bearing)>>FIXEDPOINTSHIFT); 
-      sendandchecksumcharacter(portnumber,0); // gps update
+      send_good_header(portnumber,5);
+      send_and_checksum_int(portnumber,(global.navigationDistance)>>FIXEDPOINTSHIFT); 
+      send_and_checksum_int(portnumber,(global.navigationBearing)>>FIXEDPOINTSHIFT); 
+      send_and_checksum_character(portnumber,0); // gps update
       }
    else if (command==MSP_RC_TUNING)
       { // user settings
-      sendgoodheader(portnumber,7);
-      sendandchecksumcharacter(portnumber,0); // rcRate
-      sendandchecksumcharacter(portnumber,0); // rcExpo
-      sendandchecksumcharacter(portnumber,usersettings.maxpitchandrollrate>>(FIXEDPOINTSHIFT+3)); // rollPitchRate
-      sendandchecksumcharacter(portnumber,usersettings.maxyawrate>>(FIXEDPOINTSHIFT+2)); // yawRate
-      sendandchecksumcharacter(portnumber,0); // dynThrPID
-      sendandchecksumcharacter(portnumber,0); // thrMid8
-      sendandchecksumcharacter(portnumber,0); // thrExpo8
+      send_good_header(portnumber,7);
+      send_and_checksum_character(portnumber,0); // rcRate
+      send_and_checksum_character(portnumber,0); // rcExpo
+      send_and_checksum_character(portnumber,usersettings.maxPitchAndRollRate>>(FIXEDPOINTSHIFT+3)); // rollPitchRate
+      send_and_checksum_character(portnumber,usersettings.maxYawRate>>(FIXEDPOINTSHIFT+2)); // yawRate
+      send_and_checksum_character(portnumber,0); // dynThrPID
+      send_and_checksum_character(portnumber,0); // thrMid8
+      send_and_checksum_character(portnumber,0); // thrExpo8
       }
    else if (command==MSP_SET_RC_TUNING)
       { // user settings
       data++; //rcRate
       data++; //rcExpo
-      usersettings.maxpitchandrollrate=((fixedpointnum)(*data++))<<(FIXEDPOINTSHIFT+3); // rollPitchRate
-      usersettings.maxyawrate=((fixedpointnum)(*data++))<<(FIXEDPOINTSHIFT+2); // yawRate
+      usersettings.maxPitchAndRollRate=((fixedpointnum)(*data++))<<(FIXEDPOINTSHIFT+3); // rollPitchRate
+      usersettings.maxYawRate=((fixedpointnum)(*data++))<<(FIXEDPOINTSHIFT+2); // yawRate
       data++; // dynThrPID
       data++; // thrMid8
       data++; // thrExpo8
-      sendgoodheader(portnumber,0);
+      send_good_header(portnumber,0);
       }
 
    else // we don't know this command
       {
-      senderrorheader(portnumber);
+      send_error_header(portnumber);
       }
    lib_serial_sendchar(portnumber,serialchecksum[portnumber]);
    }
 
 #define MAXPAYLOADSIZE 64
 
-void serialcheckportforaction(unsigned char portnumber) {
+void serial_check_port_for_action(unsigned char portnumber) {
     int numcharsavailable;
     while ((numcharsavailable=lib_serial_numcharsavailable(portnumber))) {
         if (serialreceivestate[portnumber]==SERIALSTATEGOTCOMMAND) {
@@ -347,7 +347,7 @@ void serialcheckportforaction(unsigned char portnumber) {
             for (int x=0;x<serialdatasize[portnumber];++x)
                serialchecksum[portnumber]^=data[x];
             if (serialchecksum[portnumber]==data[serialdatasize[portnumber]]) {
-               evaluatecommand(portnumber,data);
+               evaluate_command(portnumber,data);
             }
             serialreceivestate[portnumber]=SERIALSTATEIDLE;
         }
@@ -393,7 +393,7 @@ void serialcheckportforaction(unsigned char portnumber) {
 
 //#define SERIALTEXTDEBUG
 #ifdef SERIALTEXTDEBUG
-void serialprintnumber(char portnumber,long num,int digits,int decimals,char usebuffer)
+void serial_print_number(char portnumber,long num,int digits,int decimals,char usebuffer)
    // prints a int number, right justified, using digits # of digits, puting a
    // decimal decimals places from the end, and using blank
    // to fill all blank spaces
@@ -427,13 +427,13 @@ void serialprintnumber(char portnumber,long num,int digits,int decimals,char use
    lib_serial_sendstring(portnumber,ptr);
    }
 
-void serialprintfixedpoint(char portnumber,fixedpointnum fp)
+void serial_print_fixedpoint(char portnumber,fixedpointnum fp)
    {
-   serialprintnumber(portnumber,lib_fp_multiply(fp,1000),7,3,1);
+   serial_print_number(portnumber,lib_fp_multiply(fp,1000),7,3,1);
    lib_serial_sendstring(portnumber,"\n\r");
    }
    
-void serialcheckportforactiontest(char portnumber)
+void serial_check_port_for_actiontest(char portnumber)
    {
    int numcharsavailable=lib_serial_numcharsavailable(portnumber);
    if (numcharsavailable)
@@ -445,53 +445,53 @@ void serialcheckportforactiontest(char portnumber)
          { // receiver values
          for (int x=0;x<6;++x)
             {
-            serialprintfixedpoint(portnumber,global.rxvalues[x]);      
+            serial_print_fixedpoint(portnumber,global.rxValues[x]);      
             }
          }
       else if (c=='g')
          { // gyro values
          for (int x=0;x<3;++x)
             {
-            serialprintfixedpoint(portnumber,global.gyrorate[x]);
+            serial_print_fixedpoint(portnumber,global.gyrorate[x]);
             }
          }
       else if (c=='a')
          { // acc g values
          for (int x=0;x<3;++x)
             {
-            serialprintfixedpoint(portnumber,global.acc_g_vector[x]);
+            serial_print_fixedpoint(portnumber,global.correctedVectorGs[x]);
             }
          }
       else if (c=='t')
          { // atttude angle values
          for (int x=0;x<3;++x)
             {
-            serialprintfixedpoint(portnumber,global.currentestimatedeulerattitude[x]);
+            serial_print_fixedpoint(portnumber,global.currentEstimatedEulerAttitude[x]);
             }
          }
       else if (c=='e')
          { // atttude angle values
-         serialprintfixedpoint(portnumber,global.estimateddownvector[0]);
-         serialprintfixedpoint(portnumber,global.estimateddownvector[1]);
-         serialprintfixedpoint(portnumber,global.estimateddownvector[2]);
-         serialprintfixedpoint(portnumber,global.estimatedwestvector[0]);
-         serialprintfixedpoint(portnumber,global.estimatedwestvector[1]);
-         serialprintfixedpoint(portnumber,global.estimatedwestvector[2]);
+         serial_print_fixedpoint(portnumber,global.estimatedDownVector[0]);
+         serial_print_fixedpoint(portnumber,global.estimatedDownVector[1]);
+         serial_print_fixedpoint(portnumber,global.estimatedDownVector[2]);
+         serial_print_fixedpoint(portnumber,global.estimatedWestVector[0]);
+         serial_print_fixedpoint(portnumber,global.estimatedWestVector[1]);
+         serial_print_fixedpoint(portnumber,global.estimatedWestVector[2]);
          }
       else if (c=='d')
          { // debug values
          for (int x=0;x<3;++x)
-         serialprintfixedpoint(portnumber,global.debugvalue[x]);
+         serial_print_fixedpoint(portnumber,global.debugValue[x]);
          }
       else if (c=='l')
          { // altitude 
-         serialprintfixedpoint(portnumber,global.altitude);
+         serial_print_fixedpoint(portnumber,global.altitude);
          }
       else if (c=='p')
          { // atttude angle values
-         serialprintfixedpoint(portnumber,usersettings.pid_pgain[0]);
-         serialprintfixedpoint(portnumber,usersettings.pid_igain[0]);
-         serialprintfixedpoint(portnumber,usersettings.pid_dgain[0]);
+         serial_print_fixedpoint(portnumber,usersettings.pid_pgain[0]);
+         serial_print_fixedpoint(portnumber,usersettings.pid_igain[0]);
+         serial_print_fixedpoint(portnumber,usersettings.pid_dgain[0]);
          }
       lib_serial_sendstring(portnumber,"\n\r");
       }
@@ -499,31 +499,31 @@ void serialcheckportforactiontest(char portnumber)
 #endif
 #endif
 
-void serialcheckforaction()
+void serial_check_for_action()
    { // to be called by the main program every cycle so that we can check to see if we need to respond to incoming characters
 #if (MULTIWII_CONFIG_SERIAL_PORTS & SERIALPORT0)
-   serialcheckportforaction(0);
+   serial_check_port_for_action(0);
 #endif
 
 #if (MULTIWII_CONFIG_SERIAL_PORTS & SERIALPORT1)
-   serialcheckportforaction(1);
+   serial_check_port_for_action(1);
 #endif
 
 #if (MULTIWII_CONFIG_SERIAL_PORTS & SERIALPORT2)
-   serialcheckportforaction(2);
-//   serialcheckportforactiontest(2);
+   serial_check_port_for_action(2);
+//   serial_check_port_for_actiontest(2);
 #endif
 
 #if (MULTIWII_CONFIG_SERIAL_PORTS & SERIALPORT3)
 #ifdef SERIALTEXTDEBUG
-   serialcheckportforactiontest(3);
+   serial_check_port_for_actiontest(3);
 #else
-   serialcheckportforaction(3);
+   serial_check_port_for_action(3);
 #endif
 #endif
 
 #if (MULTIWII_CONFIG_SERIAL_PORTS & SERIALPORTUSB)
-   serialcheckportforaction(USBPORTNUMBER);
+   serial_check_port_for_action(USBPORTNUMBER);
 #endif
    
    }

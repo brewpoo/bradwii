@@ -23,33 +23,31 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "lib_timers.h"
 
 // when adding GPS's, the following functions must be included:
-// initgps()  // does any initialization of the gps
-// readgps()  // sets global.gps_current_latitude in fixedpointnum degrees shifted left by LATLONGEXTRASHIFT
-//                    global.gps_current_longitude in fixedpointnum degrees shifted left by LATLONGEXTRASHIFT
-//                    global.gps_num_satelites,global.gps_current_altitude in fixedpointnum meters
+// init_gps()  // does any initialization of the gps
+// read_gps()  // sets global.gpsCurrentLatitude in fixedpointnum degrees shifted left by LATLONGEXTRASHIFT
+//                    global.gpsCurrentLongitude in fixedpointnum degrees shifted left by LATLONGEXTRASHIFT
+//                    global.gpsNumSatelites,global.gpsCurrentAltitude in fixedpointnum meters
 //                      returns 1 if a new fix is acquired, 0 otherwise.
 
 extern globalstruct global;
 
 #if (GPS_TYPE==NO_GPS)
-void initgps()
-   {
-   }
+void init_gps() {
+}
    
-char readgps()
-   { // returns 1 if new data was read
-   return(0);
-   }
+char read_gps() {
+    // returns 1 if new data was read
+    return(0);
+}
    
 #endif
 
 #if (GPS_TYPE==SERIAL_GPS)
 
-void initgps()
-   {
-   lib_serial_initport(GPS_SERIAL_PORT,GPS_BAUD);
-   global.gps_num_satelites=0;
-   }
+void init_gps() {
+    lib_serial_initport(GPS_SERIAL_PORT,GPS_BAUD);
+    global.gpsNumSatelites=0;
+}
 
 #define GPSDATASIZE 15
 #define FRAME_GGA 1
@@ -65,11 +63,11 @@ unsigned char gpsfix;
 fixedpointnum gpslatitudedegrees;
 fixedpointnum gpslongitudedegrees;
 
-unsigned char hextochar(unsigned char n) 
-   {      // convert '0'..'9','A'..'F' to 0..15
-   if (n>='A') return(n-'A'+10);
-   else return(n-'0');
-   }
+unsigned char hextochar(unsigned char n) {
+     // convert '0'..'9','A'..'F' to 0..15
+    if (n>='A') return(n-'A'+10);
+    else return(n-'0');
+}
 
 //fixedpointnum gpsstringtoangle(char *string)
 //   { // takes a gps string and converts it to a fixedpointnum angle
@@ -86,106 +84,80 @@ unsigned char hextochar(unsigned char n)
 //   return((degrees<<LATLONGEXTRASHIFT)+lib_fp_multiply(minutes,69905L));  // 69905L is (1/60) * 2^16 * 2^6
 //   }
 
-fixedpointnum gpsstringtoangle(char *string)
-   { // takes a gps string and converts it to a fixedpointnum angle
-   // "4807.123" means 48 degrees, 7.123 minutes, south
-   // how many digits are there before the decimal point?
-   int index=0;
-   while (string[index]>='0' && string[index]<='9') ++index;
+fixedpointnum gpsstringtoangle(char *string) {
+    // takes a gps string and converts it to a fixedpointnum angle
+    // "4807.123" means 48 degrees, 7.123 minutes, south
+    // how many digits are there before the decimal point?
+    int index=0;
+    while (string[index]>='0' && string[index]<='9') ++index;
 
-   // convert the minutes part.  Use two digits before the decimal and 7 digits after
-   fixedpointnum minutes=0;
-   char *ptr=&string[index]-2;
-   for (int count=0;count<10;++count)
-      {
-      if (*ptr=='.') ++ptr;
-      else
-         {
-         minutes*=10;
-         if (*ptr) minutes+=(*ptr++) - '0';
-         }
-      }
-   string[index-2]='\0';
-   fixedpointnum degrees=lib_fp_stringtolong(string);
+    // convert the minutes part.  Use two digits before the decimal and 7 digits after
+    fixedpointnum minutes=0;
+    char *ptr=&string[index]-2;
+    for (int count=0;count<10;++count) {
+        if (*ptr=='.') {
+            ++ptr;
+        } else {
+            minutes*=10;
+            if (*ptr) minutes+=(*ptr++) - '0';
+        }
+    }
+    string[index-2]='\0';
+    fixedpointnum degrees=lib_fp_stringtolong(string);
 
-   return((degrees<<(FIXEDPOINTSHIFT+LATLONGEXTRASHIFT))+(lib_fp_multiply(minutes,117281L)>>8));  // 29318L is (2^16 * 2^6 * 2^16 * 2^6)/(60 * 10^7)
-   }
+    return((degrees<<(FIXEDPOINTSHIFT+LATLONGEXTRASHIFT))+(lib_fp_multiply(minutes,117281L)>>8));  // 29318L is (2^16 * 2^6 * 2^16 * 2^6)/(60 * 10^7)
+}
 
 
-char readgps()
-   {
-   while (lib_serial_numcharsavailable(GPS_SERIAL_PORT))
-      {
-      char c=lib_serial_getchar(GPS_SERIAL_PORT);
+char read_gps() {
+    while (lib_serial_numcharsavailable(GPS_SERIAL_PORT)) {
+    char c=lib_serial_getchar(GPS_SERIAL_PORT);
 
-      if (c=='$') // start of a new message
-         {
-         gpsparameternumber=0;
-         gpsdataindex=0;
-         gpschecksum=0;
-         gpsframetype=0;
-         }
-      else
-         {
-         if (c==',' || c=='*')
-            { // we just finished loading a parameter, interpret it
+    if (c=='$') {
+        // start of a new message
+        gpsparameternumber=0;
+        gpsdataindex=0;
+        gpschecksum=0;
+        gpsframetype=0;
+    } else {
+        if (c==',' || c=='*') {
+            // we just finished loading a parameter, interpret it
             gpsdata[gpsdataindex]='\0';
 
-            if (gpsparameternumber == 0) 
-               { //frame identification
-               if (gpsdata[0] == 'G' && gpsdata[1] == 'P' && gpsdata[2] == 'G' && gpsdata[3] == 'G' && gpsdata[4] == 'A') gpsframetype=FRAME_GGA;
-               else if (gpsdata[0] == 'G' && gpsdata[1] == 'P' && gpsdata[2] == 'R' && gpsdata[3] == 'M' && gpsdata[4] == 'C') gpsframetype = FRAME_RMC;
-               } 
-            else if (gpsframetype == FRAME_GGA) 
-               {
-               if (gpsparameternumber == 2) 
-                  {
-                  gpslatitudedegrees = gpsstringtoangle(gpsdata);
+            if (gpsparameternumber == 0) {
+                 //frame identification
+                if (gpsdata[0] == 'G' && gpsdata[1] == 'P' && gpsdata[2] == 'G' && gpsdata[3] == 'G' && gpsdata[4] == 'A') gpsframetype=FRAME_GGA;
+                else if (gpsdata[0] == 'G' && gpsdata[1] == 'P' && gpsdata[2] == 'R' && gpsdata[3] == 'M' && gpsdata[4] == 'C') gpsframetype = FRAME_RMC;
+            } else if (gpsframetype == FRAME_GGA) {
+                if (gpsparameternumber == 2) {
+                    gpslatitudedegrees = gpsstringtoangle(gpsdata);
+                } else if (gpsparameternumber == 3) {
+                    if ( gpsdata[0] == 'S') gpslatitudedegrees=-gpslatitudedegrees;
+                } else if (gpsparameternumber == 4) {
+                    gpslongitudedegrees = gpsstringtoangle(gpsdata);
+                  } else if (gpsparameternumber == 5) {
+                      if ( gpsdata[0] == 'W') gpslongitudedegrees=-gpslongitudedegrees;
+                  } else if (gpsparameternumber == 6) {
+                      gpsfix = gpsdata[0]-'0';
+                  } else if (gpsparameternumber == 7) {
+                      global.gpsNumSatelites = lib_fp_stringtolong(gpsdata);
+                  } else if (gpsparameternumber == 9) {
+                      global.gpsCurrentAltitude = lib_fp_stringtofixedpointnum(gpsdata);
                   }
-               else if (gpsparameternumber == 3)
-                  {
-                  if ( gpsdata[0] == 'S') gpslatitudedegrees=-gpslatitudedegrees;
-                  }
-               else if (gpsparameternumber == 4)
-                  {
-                  gpslongitudedegrees = gpsstringtoangle(gpsdata);
-                  }
-               else if (gpsparameternumber == 5)
-                  {
-                  if ( gpsdata[0] == 'W') gpslongitudedegrees=-gpslongitudedegrees;
-                  }
-               else if (gpsparameternumber == 6)
-                  {
-                  gpsfix = gpsdata[0]-'0';
-                  }
-               else if (gpsparameternumber == 7)
-                  {
-                  global.gps_num_satelites = lib_fp_stringtolong(gpsdata);
-                  }
-               else if (gpsparameternumber == 9)
-                  {
-                  global.gps_current_altitude = lib_fp_stringtofixedpointnum(gpsdata);
-                  }
-               } 
-            else if (gpsframetype == FRAME_RMC) 
-               {
-               if (gpsparameternumber == 7)
-                  {
+            } else if (gpsframetype == FRAME_RMC) {
+                if (gpsparameternumber == 7) {
                   // 1 knot = 0.514444444 m / s
-                  global.gps_current_speed=lib_fp_multiply(lib_fp_stringtofixedpointnum(gpsdata),33715L); // 33715L is .514444444 * 2^16
-                  }
-               else if (gpsparameternumber == 8) 
-                  {
+                    global.gpsCurrentSpeed=lib_fp_multiply(lib_fp_stringtofixedpointnum(gpsdata),33715L); // 33715L is .514444444 * 2^16
+                } else if (gpsparameternumber == 8) {
 //                  GPS_ground_course = grab_fields(gpsdata,1); 
-                  }                 //ground course deg*10 
-               }
+                }                 //ground course deg*10
+            }
             
             ++gpsparameternumber;
             gpsdataindex = 0; // get ready for the next parameter
             if (c == '*') gpsfinalchecksum=gpschecksum;
-            }
-         else if (c == '\r' || c == '\n') 
-            { // end of the message
+        } else if (c == '\r' || c == '\n') {
+             // end of the message
             unsigned char checksum = hextochar(gpsdata[0]);
             checksum <<= 4;
             checksum += hextochar(gpsdata[1]);
@@ -193,20 +165,18 @@ char readgps()
             if (checksum != gpsfinalchecksum || gpsframetype!=FRAME_GGA || !gpsfix) return(0);
             gpsframetype=0; // so we don't check again
 
-            global.gps_current_latitude=gpslatitudedegrees;
-            global.gps_current_longitude=gpslongitudedegrees;
+            global.gpsCurrentLatitude=gpslatitudedegrees;
+            global.gpsCurrentLongitude=gpslongitudedegrees;
             
             return(1); // we got a good frame
-            }
-         else if (gpsdataindex<GPSDATASIZE)
-            {
+        } else if (gpsdataindex<GPSDATASIZE) {
             gpsdata[gpsdataindex++]=c;
-            }
-         gpschecksum^=c;
-         }
-      }
-   return(0); // no complete data yet
-   }
+        }
+        gpschecksum^=c;
+    }
+    }
+    return(0); // no complete data yet
+}
 
 #elif (GPS_TYPE==I2C_GPS)
 
@@ -271,76 +241,74 @@ char readgps()
 
 unsigned long gpstimer;
 
-void initgps()
-   {
-   gpstimer=lib_timers_starttimer();
-   }
+void init_gps() {
+    gpstimer=lib_timers_starttimer();
+}
 
-char readgps()
-   { // returns 1 if new data was read
-   if (lib_timers_gettimermicroseconds(gpstimer)<50000) return(0); // 20 hz
+char read_gps() {
+    // returns 1 if new data was read
+    if (lib_timers_gettimermicroseconds(gpstimer)<50000) return(0); // 20 hz
 
-   gpstimer=lib_timers_starttimer();
+    gpstimer=lib_timers_starttimer();
    
-   unsigned char shiftedaddress=I2C_GPS_ADDRESS<<1;
-   lib_i2c_start_wait(shiftedaddress+I2C_WRITE);
-   if (lib_i2c_write(I2C_GPS_STATUS_00))
-      return(0); 
+    unsigned char shiftedaddress=I2C_GPS_ADDRESS<<1;
+    lib_i2c_start_wait(shiftedaddress+I2C_WRITE);
+    if (lib_i2c_write(I2C_GPS_STATUS_00)) return(0);
 
-   lib_i2c_rep_start(shiftedaddress+I2C_READ);
+    lib_i2c_rep_start(shiftedaddress+I2C_READ);
 
-   unsigned char gps_status= lib_i2c_readnak();
+    unsigned char gps_status= lib_i2c_readnak();
  
-   global.gps_num_satelites = (gps_status & 0xf0) >> 4;
-   if (gps_status & I2C_GPS_STATUS_3DFIX) 
-      { //Check is we have a good 3d fix (numsats>5)
-      long longvalue;
-      unsigned char *ptr=(unsigned char *)&longvalue;
+    global.gpsNumSatelites = (gps_status & 0xf0) >> 4;
+    if (gps_status & I2C_GPS_STATUS_3DFIX) {
+        //Check is we have a good 3d fix (numsats>5)
+        long longvalue;
+        unsigned char *ptr=(unsigned char *)&longvalue;
       
-      lib_i2c_rep_start(shiftedaddress+I2C_WRITE);
-      lib_i2c_write(I2C_GPS_LOCATION); 
-      lib_i2c_rep_start(shiftedaddress+I2C_READ);
+        lib_i2c_rep_start(shiftedaddress+I2C_WRITE);
+        lib_i2c_write(I2C_GPS_LOCATION);
+        lib_i2c_rep_start(shiftedaddress+I2C_READ);
 
-      *ptr++ = lib_i2c_readack();
-      *ptr++ = lib_i2c_readack();
-      *ptr++ = lib_i2c_readack();
-      *ptr = lib_i2c_readack();
+        *ptr++ = lib_i2c_readack();
+        *ptr++ = lib_i2c_readack();
+        *ptr++ = lib_i2c_readack();
+        *ptr = lib_i2c_readack();
 
-      global.gps_current_latitude=lib_fp_multiply(longvalue,27488L); // convert from 10,000,000 m to fixedpointnum
+        global.gpsCurrentLatitude=lib_fp_multiply(longvalue,27488L); // convert from 10,000,000 m to fixedpointnum
       
-      ptr=(unsigned char *)&longvalue;
+        ptr=(unsigned char *)&longvalue;
       
-      *ptr++ = lib_i2c_readack();
-      *ptr++ = lib_i2c_readack();
-      *ptr++ = lib_i2c_readack();
-      *ptr = lib_i2c_readnak();
+        *ptr++ = lib_i2c_readack();
+        *ptr++ = lib_i2c_readack();
+        *ptr++ = lib_i2c_readack();
+        *ptr = lib_i2c_readnak();
       
-      global.gps_current_longitude=lib_fp_multiply(longvalue,27488L); // convert from 10,000,000 m to fixedpointnum
+        global.gpsCurrentLongitude=lib_fp_multiply(longvalue,27488L); // convert from 10,000,000 m to fixedpointnum
 
-      int intvalue;
-      ptr= (unsigned char *)&intvalue;
+        int intvalue;
+        ptr= (unsigned char *)&intvalue;
       
-      lib_i2c_rep_start(shiftedaddress+I2C_WRITE);
-      lib_i2c_write(I2C_GPS_GROUND_SPEED); 
-      lib_i2c_rep_start(shiftedaddress+I2C_READ);
+        lib_i2c_rep_start(shiftedaddress+I2C_WRITE);
+        lib_i2c_write(I2C_GPS_GROUND_SPEED);
+        lib_i2c_rep_start(shiftedaddress+I2C_READ);
 
-      *ptr++ = lib_i2c_readack();
-      *ptr++ = lib_i2c_readack();
+        *ptr++ = lib_i2c_readack();
+        *ptr++ = lib_i2c_readack();
       
-      global.gps_current_speed=intvalue*665L; // convert fro cm/s to fixedpointnum to m/s
+        global.gpsCurrentSpeed=intvalue*665L; // convert fro cm/s to fixedpointnum to m/s
       
-      ptr= (unsigned char *)&intvalue;
-      *ptr++ = lib_i2c_readack();
-      *ptr = lib_i2c_readnak();
+        ptr= (unsigned char *)&intvalue;
+        *ptr++ = lib_i2c_readack();
+        *ptr = lib_i2c_readnak();
 
-      global.gps_current_altitude=((fixedpointnum)intvalue)<<FIXEDPOINTSHIFT;
+        global.gpsCurrentAltitude=((fixedpointnum)intvalue)<<FIXEDPOINTSHIFT;
 
-      lib_i2c_stop();
-      return(1);
-      }
-   lib_i2c_stop();
+        lib_i2c_stop();
+        return(1);
+    }
+    lib_i2c_stop();
 
-   return(0);
-   }
+    return(0);
+}
 
 #endif

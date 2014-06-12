@@ -43,10 +43,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //#define RX_DSM2_SERIAL_PORT 1
 
 // Choose a channel order if you don't like the default for your receiver type selected above
-//#define RX_CHANNEL_ORDER         THROTTLEINDEX,ROLLINDEX,PITCHINDEX,YAWINDEX,AUX1INDEX,AUX2INDEX,AUX3INDEX,AUX4INDEX,8,9,10,11 //For Graupner/Spektrum
-//#define RX_CHANNEL_ORDER         ROLLINDEX,PITCHINDEX,THROTTLEINDEX,YAWINDEX,AUX1INDEX,AUX2INDEX,AUX3INDEX,AUX4INDEX,8,9,10,11 //For Robe/Hitec/Futaba
-//#define RX_CHANNEL_ORDER         ROLLINDEX,PITCHINDEX,YAWINDEX,THROTTLEINDEX,AUX1INDEX,AUX2INDEX,AUX3INDEX,AUX4INDEX,8,9,10,11 //For Multiplex
-//#define RX_CHANNEL_ORDER         PITCHINDEX,ROLLINDEX,THROTTLEINDEX,YAWINDEX,AUX1INDEX,AUX2INDEX,AUX3INDEX,AUX4INDEX,8,9,10,11 //For some Hitec/Sanwa/Others
+//#define RX_CHANNEL_ORDER         THROTTLE_INDEX,ROLL_INDEX,PITCH_INDEX,YAW_INDEX,AUX1_INDEX,AUX2_INDEX,AUX3_INDEX,AUX4_INDEX,8,9,10,11 //For Graupner/Spektrum
+//#define RX_CHANNEL_ORDER         ROLL_INDEX,PITCH_INDEX,THROTTLE_INDEX,YAW_INDEX,AUX1_INDEX,AUX2_INDEX,AUX3_INDEX,AUX4_INDEX,8,9,10,11 //For Robe/Hitec/Futaba
+//#define RX_CHANNEL_ORDER         ROLL_INDEX,PITCH_INDEX,YAW_INDEX,THROTTLE_INDEX,AUX1_INDEX,AUX2_INDEX,AUX3_INDEX,AUX4_INDEX,8,9,10,11 //For Multiplex
+//#define RX_CHANNEL_ORDER         PITCH_INDEX,ROLL_INDEX,THROTTLE_INDEX,YAW_INDEX,AUX1_INDEX,AUX2_INDEX,AUX3_INDEX,AUX4_INDEX,8,9,10,11 //For some Hitec/Sanwa/Others
 
 // uncomment to set the number of RX channels, otherwise it will default to what the control board/receiver can handle
 #define RXNUMCHANNELS 6
@@ -126,7 +126,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //#define COMPASS_TYPE HMC5883
 //#define COMPASS_TYPE HMC5843
 //#define COMPASS_TYPE MAG3110
-//#define COMPASS_ORIENTATION(VALUES,X, Y, Z) {VALUES[ROLLINDEX]  =  X; VALUES[PITCHINDEX]  = Y; VALUES[YAWINDEX]  = -Z;}
+//#define COMPASS_ORIENTATION(VALUES,X, Y, Z) {VALUES[ROLL_INDEX]  =  X; VALUES[PITCH_INDEX]  = Y; VALUES[YAW_INDEX]  = -Z;}
 
 // un-comment if you don't want to include code for a barometer, otherwise it will default to what the control board has on it
 //#define BAROMETER_TYPE NO_BAROMETER

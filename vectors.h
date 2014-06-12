@@ -20,17 +20,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "lib_fp.h"
 
 // an attitude is defined as first a rotation from north, then a 3d vector that points down (gravity) from the rotated reference.
-typedef struct
-   {
-   fixedpointnum westvector[3];
-   fixedpointnum downvector[3];
-   } attitudestruct;
+typedef struct {
+    fixedpointnum westVector[3];
+    fixedpointnum downVector[3];
+} attitudestruct;
 
-void vectorcrossproduct(fixedpointnum *v1,fixedpointnum *v2,fixedpointnum *v3);
-fixedpointnum normalizevector(fixedpointnum *v);
-fixedpointnum vectordotproduct(fixedpointnum *v1,fixedpointnum *v2);
-void vectordifferencetoeulerangles(fixedpointnum *v1,fixedpointnum *v2,fixedpointnum *euler);
-void attitudetoeulerangles(attitudestruct *theattitude,fixedpointnum *eulerangles);
-void rotatevectorwithsmallangles(fixedpointnum *v,fixedpointnum rolldeltaangle,fixedpointnum pitchdeltaangle,fixedpointnum yawdeltaangle);
-void rotatevectorbyaxisangle(fixedpointnum *v1,fixedpointnum *axisvector,fixedpointnum angle,fixedpointnum *v2);
-void rotatevectorbyaxissmallangle(fixedpointnum *v1,fixedpointnum *axisvector,fixedpointnum angle);
+void vector_cross_product(fixedpointnum *v1,fixedpointnum *v2,fixedpointnum *v3);
+fixedpointnum normalize_vector(fixedpointnum *v);
+fixedpointnum vector_dot_product(fixedpointnum *v1,fixedpointnum *v2);
+void vector_difference_to_euler_angles(fixedpointnum *v1, fixedpointnum *v2, fixedpointnum *euler);
+void attitude_to_euler_angles(attitudestruct *theattitude,fixedpointnum *eulerangles);
+void rotate_vector_with_small_angles(fixedpointnum *v,fixedpointnum rolldeltaangle, fixedpointnum pitchdeltaangle, fixedpointnum yawdeltaangle);
+void rotate_vector_by_axis_angle(fixedpointnum *v1, fixedpointnum *axisvector, fixedpointnum angle, fixedpointnum *v2);
+void rotate_vector_by_axis_small_angle(fixedpointnum *v1, fixedpointnum *axisvector, fixedpointnum angle);

@@ -41,69 +41,67 @@ char checkboxnames[]/* PROGMEM */= // names for dynamic generation of config GUI
 
 // each checkbox item has a checkboxvalue.  The bits in this value represent low, medium, and high checkboxes
 // for each of the aux switches, just as they show up in most config programs.
-void checkcheckboxitems()
-   {
-   global.previousactivecheckboxitems=global.activecheckboxitems;
-   global.activecheckboxitems=0;
+void check_checkbox_items() {
+    global.previousActiveCheckboxItems=global.activeCheckboxItems;
+    global.activeCheckboxItems=0;
    
-   unsigned int mask=0; // a mask of what aux states are true
+    unsigned int mask=0; // a mask of what aux states are true
 #if (RXNUMCHANNELS>4)
-   if (global.rxvalues[AUX1INDEX]<FPAUXMIDRANGELOW) // low
-      mask |= (1<<0);
-   else if (global.rxvalues[AUX1INDEX]>FPAUXMIDRANGEHIGH) // high
-      mask |= (1<<2);
-   else mask |=(1<<1); // mid
+    if (global.rxValues[AUX1_INDEX]<FPAUXMIDRANGELOW) // low
+        mask |= (1<<0);
+    else if (global.rxValues[AUX1_INDEX]>FPAUXMIDRANGEHIGH) // high
+        mask |= (1<<2);
+    else mask |=(1<<1); // mid
 #endif
 
 #if (RXNUMCHANNELS>5)
-   if (global.rxvalues[AUX2INDEX]<FPAUXMIDRANGELOW) // low
-      mask |= (1<<3);
-   else if (global.rxvalues[AUX2INDEX]>FPAUXMIDRANGEHIGH) // high
-      mask |= (1<<5);
-   else mask |=(1<<4); //mid
+    if (global.rxValues[AUX2_INDEX]<FPAUXMIDRANGELOW) // low
+        mask |= (1<<3);
+    else if (global.rxValues[AUX2_INDEX]>FPAUXMIDRANGEHIGH) // high
+        mask |= (1<<5);
+    else mask |=(1<<4); //mid
 #endif
 
 #if (RXNUMCHANNELS>6)
-   if (global.rxvalues[AUX3INDEX]<FPAUXMIDRANGELOW) // low
-      mask |= (1<<6);
-   else if (global.rxvalues[AUX3INDEX]>FPAUXMIDRANGEHIGH) // high
-      mask |= (1<<8);
-   else mask |=(1<<7); //mid
+    if (global.rxValues[AUX3_INDEX]<FPAUXMIDRANGELOW) // low
+        mask |= (1<<6);
+    else if (global.rxValues[AUX3_INDEX]>FPAUXMIDRANGEHIGH) // high
+        mask |= (1<<8);
+    else mask |=(1<<7); //mid
 #endif
 
 #if (RXNUMCHANNELS>7)
-   if (global.rxvalues[AUX4INDEX]<FPAUXMIDRANGELOW) // low
-      mask |= (1<<9);
-   else if (global.rxvalues[AUX4INDEX]>FPAUXMIDRANGEHIGH) // high
-      mask |= (1<<11);
-   else mask |=(1<<10); //mid
+    if (global.rxValues[AUX4_INDEX]<FPAUXMIDRANGELOW) // low
+        mask |= (1<<9);
+    else if (global.rxValues[AUX4_INDEX]>FPAUXMIDRANGEHIGH) // high
+        mask |= (1<<11);
+    else mask |=(1<<10); //mid
 #endif
 
-   for (int x=0;x<NUMCHECKBOXES;++x)
-      {
-      if (usersettings.checkboxconfiguration[x] & mask) global.activecheckboxitems |= (1L<<x);
-      }
+    for (int x=0;x<NUM_CHECKBOXES;++x) {
+        if (usersettings.checkboxConfiguration[x] & mask) global.activeCheckboxItems |= (1L<<x);
+    }
 
 #if (defined(STICK_ARM) | defined (STICK_DISARM))
    // figure out where the sticks are
    unsigned int stickmask=0;
-   if (global.rxvalues[ROLLINDEX]<FPSTICKLOW) stickmask |= STICK_COMMAND_ROLL_LOW;
-   else if (global.rxvalues[ROLLINDEX]>FPSTICKHIGH) stickmask |= STICK_COMMAND_ROLL_HIGH;
+   if (global.rxValues[ROLL_INDEX]<FPSTICKLOW) stickmask |= STICK_COMMAND_ROLL_LOW;
+   else if (global.rxValues[ROLL_INDEX]>FPSTICKHIGH) stickmask |= STICK_COMMAND_ROLL_HIGH;
 
-   if (global.rxvalues[PITCHINDEX]<FPSTICKLOW) stickmask |= STICK_COMMAND_PITCH_LOW;
-   else if (global.rxvalues[PITCHINDEX]>FPSTICKHIGH) stickmask |= STICK_COMMAND_PITCH_HIGH;
+   if (global.rxValues[PITCH_INDEX]<FPSTICKLOW) stickmask |= STICK_COMMAND_PITCH_LOW;
+   else if (global.rxValues[PITCH_INDEX]>FPSTICKHIGH) stickmask |= STICK_COMMAND_PITCH_HIGH;
 
-   if (global.rxvalues[YAWINDEX]<FPSTICKLOW) stickmask |= STICK_COMMAND_YAW_LOW;
-   else if (global.rxvalues[YAWINDEX]>FPSTICKHIGH) stickmask |= STICK_COMMAND_YAW_HIGH;
+   if (global.rxValues[YAW_INDEX]<FPSTICKLOW) stickmask |= STICK_COMMAND_YAW_LOW;
+   else if (global.rxValues[YAW_INDEX]>FPSTICKHIGH) stickmask |= STICK_COMMAND_YAW_HIGH;
 
 
    // If the sticks are in the right positions, set the arm or disarm checkbox value
    // Start with the previous value in case the sticks aren't doing anything special
-   global.activecheckboxitems=(global.activecheckboxitems & ~CHECKBOXMASKARM) | (global.previousactivecheckboxitems & CHECKBOXMASKARM);
+   global.activeCheckboxItems=(global.activeCheckboxItems & ~CHECKBOX_MASK_ARM) | (global.previousActiveCheckboxItems & CHECKBOX_MASK_ARM);
    
-   if ((stickmask & (STICK_ARM))==STICK_ARM) global.activecheckboxitems |= CHECKBOXMASKARM;
+   if ((stickmask & (STICK_ARM))==STICK_ARM) global.activeCheckboxItems |= CHECKBOX_MASK_ARM;
    
-   else if ((stickmask & (STICK_DISARM))==STICK_DISARM) global.activecheckboxitems &= ~CHECKBOXMASKARM;
+   else if ((stickmask & (STICK_DISARM))==STICK_DISARM) global.activeCheckboxItems &= ~CHECKBOX_MASK_ARM;
       
 #endif
-   }
+}

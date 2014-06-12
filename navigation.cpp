@@ -82,10 +82,10 @@ fixedpointnum navigation_desiredeulerattitude[3];
 //  angle A is the difference between our start to destination bearing and our current bearing to the destination
 //  crosstrack distance=current distance to destination * sine(A)
 //  ontrack distance = current distance to destination *cosine(A)
-void navigation_sethometocurrentlocation()
+void navigation_set_home_to_current_location()
    {
-   global.gps_home_latitude=global.gps_current_latitude;
-   global.gps_home_longitude=global.gps_current_longitude;
+   global.gpsHomeLatitude=global.gpsCurrentLatitude;
+   global.gpsHomeLongitude=global.gpsCurrentLongitude;
    }
    
 void navigation_set_destination(fixedpointnum latitude,fixedpointnum longitude)
@@ -100,20 +100,20 @@ void navigation_set_destination(fixedpointnum latitude,fixedpointnum longitude)
 
    // remember the bearing from the current location to the waypoint.  We will need this to calculate cross track.
    // If we are already at the waypoint (position hold) any arbitrary angle will work.
-   navigation_last_ontrack_distance=navigation_getdistanceandbearing(global.gps_current_latitude,global.gps_current_longitude,latitude,longitude,&navigation_starttodestbearing);
+   navigation_last_ontrack_distance=navigation_getdistanceandbearing(global.gpsCurrentLatitude,global.gpsCurrentLongitude,latitude,longitude,&navigation_starttodestbearing);
    navigation_time_sliver=0;
 
-   navigation_desiredeulerattitude[ROLLINDEX]=0;
-   navigation_desiredeulerattitude[PITCHINDEX]=0;
+   navigation_desiredeulerattitude[ROLL_INDEX]=0;
+   navigation_desiredeulerattitude[PITCH_INDEX]=0;
 
    // for now, we will just stay rotated to the yaw angle we started at
-   navigation_desiredeulerattitude[YAWINDEX]=global.currentestimatedeulerattitude[YAWINDEX];
+   navigation_desiredeulerattitude[YAW_INDEX]=global.currentEstimatedEulerAttitude[YAW_INDEX];
    }
 
 // limit for windup
 #define NAVIGATIONINTEGRATEDERRORLIMIT FIXEDPOINTCONSTANT(1000)
 
-void navigation_setangleerror(unsigned char gotnewgpsreading,fixedpointnum *angleerror)
+void navigation_set_angle_error(unsigned char gotNewGpsReading,fixedpointnum *angleError)
    { // calculate the angle errors between our current attitude and the one we wish to have
    // and adjust the angle errors that were passed to us.  They have already been set by pilot input.
    // For now, we just override any pilot input.
@@ -121,19 +121,19 @@ void navigation_setangleerror(unsigned char gotnewgpsreading,fixedpointnum *angl
    // keep track of the time between good gps readings.
    navigation_time_sliver+=global.timesliver;
 
-   if (gotnewgpsreading)
+   if (gotNewGpsReading)
       {
       // unshift our timesliver since we are about to use it. Since we are accumulating time, it may get too large to use while shifted.
       navigation_time_sliver=navigation_time_sliver>>TIMESLIVEREXTRASHIFT;
       
       // get the new distance and bearing from our current location to our target position
-      global.navigation_distance=navigation_getdistanceandbearing(global.gps_current_latitude,global.gps_current_longitude,target_latitude,target_longitude,&global.navigation_bearing);
+      global.navigationDistance=navigation_getdistanceandbearing(global.gpsCurrentLatitude,global.gpsCurrentLongitude,target_latitude,target_longitude,&global.navigationBearing);
 
       // split the distance into it's ontrack and crosstrack components
       // see the diagram above
-      fixedpointnum angledifference=global.navigation_bearing-navigation_starttodestbearing;
-      fixedpointnum crosstrack_distance=lib_fp_multiply(global.navigation_distance,lib_fp_sine(angledifference));
-      fixedpointnum ontrack_distance=lib_fp_multiply(global.navigation_distance,lib_fp_cosine(angledifference));
+      fixedpointnum angledifference=global.navigationBearing-navigation_starttodestbearing;
+      fixedpointnum crosstrack_distance=lib_fp_multiply(global.navigationDistance,lib_fp_sine(angledifference));
+      fixedpointnum ontrack_distance=lib_fp_multiply(global.navigationDistance,lib_fp_cosine(angledifference));
 
       // accumulate integrated error for both ontrack and crosstrack
       navigation_crosstrack_integrated_error+=lib_fp_multiply(crosstrack_distance,navigation_time_sliver);
@@ -154,13 +154,13 @@ void navigation_setangleerror(unsigned char gotnewgpsreading,fixedpointnum *angl
       navigation_last_ontrack_distance=ontrack_distance;
    
       // calculate the desired tilt in each direction independently using navigation PID
-      fixedpointnum crosstracktiltangle=lib_fp_multiply(usersettings.pid_pgain[NAVIGATIONINDEX],crosstrack_distance)
-                                    +lib_fp_multiply(usersettings.pid_igain[NAVIGATIONINDEX],navigation_crosstrack_integrated_error)
-                                    -lib_fp_multiply(usersettings.pid_dgain[NAVIGATIONINDEX],navigation_crosstrack_velocity);
+      fixedpointnum crosstracktiltangle=lib_fp_multiply(usersettings.pid_pgain[NAVIGATION_INDEX],crosstrack_distance)
+                                    +lib_fp_multiply(usersettings.pid_igain[NAVIGATION_INDEX],navigation_crosstrack_integrated_error)
+                                    -lib_fp_multiply(usersettings.pid_dgain[NAVIGATION_INDEX],navigation_crosstrack_velocity);
                      
-      fixedpointnum ontracktiltangle   =lib_fp_multiply(usersettings.pid_pgain[NAVIGATIONINDEX],ontrack_distance)
-                                    +lib_fp_multiply(usersettings.pid_igain[NAVIGATIONINDEX],navigation_ontrack_integrated_error)
-                                    -lib_fp_multiply(usersettings.pid_dgain[NAVIGATIONINDEX],navigation_ontrack_velocity);
+      fixedpointnum ontracktiltangle   =lib_fp_multiply(usersettings.pid_pgain[NAVIGATION_INDEX],ontrack_distance)
+                                    +lib_fp_multiply(usersettings.pid_igain[NAVIGATION_INDEX],navigation_ontrack_integrated_error)
+                                    -lib_fp_multiply(usersettings.pid_dgain[NAVIGATION_INDEX],navigation_ontrack_velocity);
       
       // don't tilt more than MAX_TILT
       lib_fp_constrain(&crosstracktiltangle,-MAX_TILT,MAX_TILT);
@@ -169,13 +169,13 @@ void navigation_setangleerror(unsigned char gotnewgpsreading,fixedpointnum *angl
       // Translate the ontrack and cross track tilts into pitch and roll tilts.
       // Set angledifference equal to the difference between the aircraft's heading (the way it's currently pointing)
       // and the angle between waypoints and rotate our tilts by that much.   
-      angledifference=global.currentestimatedeulerattitude[YAWINDEX]-navigation_starttodestbearing;
+      angledifference=global.currentEstimatedEulerAttitude[YAW_INDEX]-navigation_starttodestbearing;
    
       fixedpointnum sineofangle=lib_fp_sine(angledifference);
       fixedpointnum cosineofangle=lib_fp_cosine(angledifference);
    
-      navigation_desiredeulerattitude[ROLLINDEX]=lib_fp_multiply(crosstracktiltangle,cosineofangle)-lib_fp_multiply(ontracktiltangle,sineofangle);
-      navigation_desiredeulerattitude[PITCHINDEX]=lib_fp_multiply(crosstracktiltangle,sineofangle)+lib_fp_multiply(ontracktiltangle,cosineofangle);
+      navigation_desiredeulerattitude[ROLL_INDEX]=lib_fp_multiply(crosstracktiltangle,cosineofangle)-lib_fp_multiply(ontracktiltangle,sineofangle);
+      navigation_desiredeulerattitude[PITCH_INDEX]=lib_fp_multiply(crosstracktiltangle,sineofangle)+lib_fp_multiply(ontracktiltangle,cosineofangle);
    
       // for now, don't rotate the aircraft in the direction of travel. Add this later.
       
@@ -183,15 +183,15 @@ void navigation_setangleerror(unsigned char gotnewgpsreading,fixedpointnum *angl
       }
    
    // set the angle error as the difference between where we want to be and where we currently are angle wise.
-   angleerror[ROLLINDEX]=navigation_desiredeulerattitude[ROLLINDEX]-global.currentestimatedeulerattitude[ROLLINDEX];
-   angleerror[PITCHINDEX]=navigation_desiredeulerattitude[PITCHINDEX]-global.currentestimatedeulerattitude[PITCHINDEX];
+   angleError[ROLL_INDEX]=navigation_desiredeulerattitude[ROLL_INDEX]-global.currentEstimatedEulerAttitude[ROLL_INDEX];
+   angleError[PITCH_INDEX]=navigation_desiredeulerattitude[PITCH_INDEX]-global.currentEstimatedEulerAttitude[PITCH_INDEX];
 
    // don't set the yaw.  Let the pilot do yaw
-//   angleerror[YAWINDEX]=navigation_desiredeulerattitude[YAWINDEX]-global.currentestimatedeulerattitude[YAWINDEX];
+//   angleError[YAW_INDEX]=navigation_desiredeulerattitude[YAW_INDEX]-global.currentEstimatedEulerAttitude[YAW_INDEX];
 
    // don't let the yaw angle error get too large for any one cycle in order to control the maximum yaw rate.
-//   lib_fp_constrain180(&angleerror[YAWINDEX]);
-//   lib_fp_constrain(&angleerror[YAWINDEX],-MAXYAWANGLEERROR,MAXYAWANGLEERROR);
+//   lib_fp_constrain180(&angleError[YAW_INDEX]);
+//   lib_fp_constrain(&angleError[YAW_INDEX],-MAXYAWANGLEERROR,MAXYAWANGLEERROR);
    }
    
 #endif

@@ -17,7 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "lib_fp.h"
 
-void navigation_sethometocurrentlocation();
+void navigation_set_home_to_current_location();
 void navigation_set_destination(fixedpointnum latitude,fixedpointnum longitude);
-void navigation_setangleerror(unsigned char gotnewgpsreading,fixedpointnum *angleerror);
+void navigation_set_angle_error(unsigned char gotNewGpsReading,fixedpointnum *angleError);
 fixedpointnum navigation_getdistanceandbearing(fixedpointnum lat1,fixedpointnum lon1,fixedpointnum lat2,fixedpointnum lon2,fixedpointnum *bearing);

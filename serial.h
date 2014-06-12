@@ -17,8 +17,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-void serialinit();
-void serialcheckforaction();
+void serial_init();
+void serial_check_for_action();
 
 // Multiwii Serial Protocol 0 
 #define MSP_VERSION             0

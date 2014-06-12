@@ -19,8 +19,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "lib_fp.h"
 
-void initrx();
-void readrx();
+void init_rx();
+void read_rx();
 
 #define THROTTLE_RX_TIMER FIRSTRXTIMER
 #define ROLL_RX_TIMER FIRSTRXTIMER+1

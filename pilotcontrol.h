@@ -17,5 +17,5 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "lib_fp.h"
 
-void resetpilotcontrol();
-void getangleerrorfrompilotinput(fixedpointnum *angleerror);
+void reset_pilot_control();
+void get_angle_error_from_pilot_input(fixedpointnum *angleError);

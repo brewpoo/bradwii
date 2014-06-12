@@ -23,82 +23,81 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "checkboxes.h"
 #include "vectors.h"
 
-#define ROLLINDEX 0
-#define PITCHINDEX 1
-#define YAWINDEX 2
-#define THROTTLEINDEX 3
-#define AUX1INDEX 4
-#define AUX2INDEX 5
-#define AUX3INDEX 6
-#define AUX4INDEX 7
+#define ROLL_INDEX 0
+#define PITCH_INDEX 1
+#define YAW_INDEX 2
+#define THROTTLE_INDEX 3
+#define AUX1_INDEX 4
+#define AUX2_INDEX 5
+#define AUX3_INDEX 6
+#define AUX4_INDEX 7
 
-#define ALTITUDEINDEX 3 // pid gain index
-#define NAVIGATIONINDEX 6 // pid gian index
+#define ALTITUDE_INDEX 3 // pid gain index
+#define NAVIGATION_INDEX 6 // pid gian index
 
-#define XINDEX 0
-#define YINDEX 1
-#define ZINDEX 2
+#define X_INDEX 0
+#define Y_INDEX 1
+#define Z_INDEX 2
 
-#define NUMPIDITEMS 10
+#define NUM_PID_ITEMS 10
 
-#define NAVIGATIONMODEOFF 0
-#define NAVIGATIONMODEPOSITIONHOLD 1
-#define NAVIGATIONMODERETURNTOHOME 2
+#define NAVIGATION_MODE_OFF 0
+#define NAVIGATION_MODE_POSITION_HOLD 1
+#define NAVIGATION_MODE_RETURN_TO_HOME 2
 
 
 // put all of the global variables into one structure to make them easy to find
 typedef struct {
-   unsigned char usersettingsfromeeprom;            // set to 1 if user settings were read from eeprom
-   fixedpointnum barorawaltitude;                  // Current altitude read from barometer, in meters (approximately)
-   fixedpointnum debugvalue[4];                     // for display in the multiwii config program. Use for debugging.
+   unsigned char userSettingsFromEeprom;            // set to 1 if user settings were read from eeprom
+   fixedpointnum baroRawAltitude;                  // Current altitude read from barometer, in meters (approximately)
+   fixedpointnum debugValue[4];                     // for display in the multiwii config program. Use for debugging.
    fixedpointnum timesliver;                        // The time in seconds (shifted TIMESLIVEREXTRASHIFT) since the last iteration of the main loop
    fixedpointnum gyrorate[3];                        // Corrected gyro rates in degrees per second
-   fixedpointnum acc_g_vector[3];                  // Corrected accelerometer vector, in G's
+   fixedpointnum correctedVectorGs[3];                  // Corrected accelerometer vector, in G's
    fixedpointnum altitude;                           // A filtered version of the baromemter's altitude
-   fixedpointnum altitudevelocity;                  // The rate of change of the altitude
-   fixedpointnum estimateddownvector[3];            // A unit vector (approximately) poining in the direction we think down is relative to the aircraft
-   fixedpointnum estimatedwestvector[3];            // A unit vector (approximately) poining in the direction we think west is relative to the aircraft
-   fixedpointnum currentestimatedeulerattitude[3]; // Euler Angles in degrees of how much we think the aircraft is Rolled, Pitched, and Yawed (from North)
-   fixedpointnum rxvalues[RXNUMCHANNELS];            // The values of the RX inputs, ranging from -1.0 to 1.0
-   fixedpointnum compassvector[3];                  // A unit vector (approximately) poining in the direction our 3d compass is pointing
-   fixedpointnum heading_when_armed;                  // the heading we were pointing when arming was established
-   fixedpointnum altitude_when_armed;                  // The altitude when arming established
-   unsigned int motoroutputvalue[NUMMOTORS];         // Output values to send to our motors, from 1000 to 2000
-   unsigned int motor[NUMMOTORS];
-   unsigned int servooutputvalue[NUMSERVOS];         // Output values to send to our motors, from 1000 to 2000
-   unsigned int servo[NUMSERVOS];
-   unsigned long activecheckboxitems;               // Bits for each checkbox item to show which are currently active
-   unsigned long previousactivecheckboxitems;      // The previous state of these bits so we can tell when they turn on and off
+   fixedpointnum altitudeVelocity;                  // The rate of change of the altitude
+   fixedpointnum estimatedDownVector[3];            // A unit vector (approximately) poining in the direction we think down is relative to the aircraft
+   fixedpointnum estimatedWestVector[3];            // A unit vector (approximately) poining in the direction we think west is relative to the aircraft
+   fixedpointnum currentEstimatedEulerAttitude[3]; // Euler Angles in degrees of how much we think the aircraft is Rolled, Pitched, and Yawed (from North)
+   fixedpointnum rxValues[RXNUMCHANNELS];            // The values of the RX inputs, ranging from -1.0 to 1.0
+   fixedpointnum compassVector[3];                  // A unit vector (approximately) poining in the direction our 3d compass is pointing
+   fixedpointnum headingWhenArmed;                  // the heading we were pointing when arming was established
+   fixedpointnum altitudeWhenArmed;                  // The altitude when arming established
+   unsigned int motorOutputValue[NUM_MOTORS];         // Output values to send to our motors, from 1000 to 2000
+   unsigned int motor[NUM_MOTORS];
+   unsigned int servoOutputValue[NUM_SERVOS];         // Output values to send to our motors, from 1000 to 2000
+   unsigned int servo[NUM_SERVOS];
+   unsigned long activeCheckboxItems;               // Bits for each checkbox item to show which are currently active
+   unsigned long previousActiveCheckboxItems;      // The previous state of these bits so we can tell when they turn on and off
    unsigned char armed;                              // A flag indicating that the aircraft is armed
-   unsigned char gps_num_satelites;                  // How many satelites do we currently see?
-   fixedpointnum gps_home_latitude;                  // The latitude when the aircraft was armed
-   fixedpointnum gps_home_longitude;               // The longitude when the aircraft was armed
-   fixedpointnum gps_current_latitude;               // The current GPS latitude
-   fixedpointnum gps_current_longitude;            // The current GPS longitude
-   fixedpointnum gps_current_altitude;               // The current GPS altitude
-   fixedpointnum gps_current_speed;                  // The current GPS speed
-   fixedpointnum navigation_distance;               // The distance to to the navigation destination in meters (I think)
-   fixedpointnum navigation_bearing;               // The bearing from the last waypoint to the next one
-   unsigned char navigationmode;                     // See navigation.h
+   unsigned char gpsNumSatelites;                  // How many satelites do we currently see?
+   fixedpointnum gpsHomeLatitude;                  // The latitude when the aircraft was armed
+   fixedpointnum gpsHomeLongitude;               // The longitude when the aircraft was armed
+   fixedpointnum gpsCurrentLatitude;               // The current GPS latitude
+   fixedpointnum gpsCurrentLongitude;            // The current GPS longitude
+   fixedpointnum gpsCurrentAltitude;               // The current GPS altitude
+   fixedpointnum gpsCurrentSpeed;                  // The current GPS speed
+   fixedpointnum navigationDistance;               // The distance to to the navigation destination in meters (I think)
+   fixedpointnum navigationBearing;               // The bearing from the last waypoint to the next one
+   unsigned char navigationMode;                     // See navigation.h
    unsigned char stable;                           // Set to 1 when our gravity vector is close to unit length
-   unsigned long failsafetimer;                    // Timer for determining if we lose radio contact
+   unsigned long failsafeTimer;                    // Timer for determining if we lose radio contact
    } globalstruct;
 
 // put all of the user adjustable settings in one structure to make it easy to read and write to eeprom.
 // We can add to the structure, but we shouldn't re-arrange the items to insure backward compatibility.
-typedef struct
-   {
-   fixedpointnum maxyawrate;                        // maximum yaw rate (by pilot input) in degrees/sec
-   fixedpointnum pid_pgain[NUMPIDITEMS];            // The various PID p gains
-   fixedpointnum pid_igain[NUMPIDITEMS];            // The various PID i gains
-   fixedpointnum pid_dgain[NUMPIDITEMS];            // The various PID d gains
-   unsigned int checkboxconfiguration[NUMPOSSIBLECHECKBOXES]; // Bits that describe how the checkboxes are configured
+typedef struct {
+   fixedpointnum maxYawRate;                        // maximum yaw rate (by pilot input) in degrees/sec
+   fixedpointnum pid_pgain[NUM_PID_ITEMS];            // The various PID p gains
+   fixedpointnum pid_igain[NUM_PID_ITEMS];            // The various PID i gains
+   fixedpointnum pid_dgain[NUM_PID_ITEMS];            // The various PID d gains
+   unsigned int checkboxConfiguration[NUM_POSSIBLE_CHECKBOXES]; // Bits that describe how the checkboxes are configured
    fixedpointnum gyrocalibration[3];               // Offsets used to calibrate the gyro
    fixedpointnum acccalibration[3];                  // Offsets used to calibrate the accelerometer
-   fixedpointnum compasscalibrationmultiplier[3];   // Multipliers used to calibrate the compass
-   int compasszerooffset[3];                        // Offsets used to calibrate the compass
-   fixedpointnum maxpitchandrollrate;               // maximum pitch and roll rate (by pilot input) in degrees/sec
-   } usersettingsstruct;
+   fixedpointnum compassCalibrationMultiplier[3];   // Multipliers used to calibrate the compass
+   int compassZeroOffset[3];                        // Offsets used to calibrate the compass
+   fixedpointnum maxPitchAndRollRate;               // maximum pitch and roll rate (by pilot input) in degrees/sec
+} usersettingsstruct;
 
-void defaultusersettings();
-void calculatetimesliver();
+void default_user_settings();
+void calculate_timesliver();

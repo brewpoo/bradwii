@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define LATLONGEXTRASHIFT 6  // keep latitudes and longitudes shifted extra for accuracy
 
-void initgps();
-char readgps();
+void init_gps();
+char read_gps();
 
 fixedpointnum gpsgetdistanceandbearing(fixedpointnum lat1,fixedpointnum lon1,fixedpointnum lat2,fixedpointnum lon2,fixedpointnum *bearing);

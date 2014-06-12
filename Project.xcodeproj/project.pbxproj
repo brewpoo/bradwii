@@ -76,6 +76,7 @@
 		A27328C014D9F0BB00E39B15 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				B238AEB3194A1FEB00B860E8 /* Internals */,
 				B2CF631C1949EEB200992E65 /* accelerometer.cpp */,
 				B2CF631B1949EEB200992E65 /* accelerometer.h */,
 				B2CF631A1949EEB200992E65 /* aircraft.cpp */,
@@ -90,7 +91,6 @@
 				B2CF63131949EEB200992E65 /* checkboxes.h */,
 				B2CF63121949EEB200992E65 /* compass.cpp */,
 				B2CF63111949EEB200992E65 /* compass.h */,
-				B2CF630F1949EEB200992E65 /* defs.h */,
 				B2CF62F61949EEB200992E65 /* eeprom.cpp */,
 				B2CF630E1949EEB200992E65 /* eeprom.h */,
 				B2CF630D1949EEB200992E65 /* gps.cpp */,
@@ -101,7 +101,6 @@
 				B2CF63081949EEB200992E65 /* imu.h */,
 				B2CF63061949EEB200992E65 /* navigation.cpp */,
 				B2CF63051949EEB200992E65 /* navigation.h */,
-				B2CF63041949EEB200992E65 /* options.h */,
 				B2CF63031949EEB200992E65 /* output.cpp */,
 				B2CF63021949EEB200992E65 /* output.h */,
 				B2CF63011949EEB200992E65 /* pilotcontrol.cpp */,
@@ -115,6 +114,15 @@
 			);
 			name = Source;
 			path = "project files";
+			sourceTree = "<group>";
+		};
+		B238AEB3194A1FEB00B860E8 /* Internals */ = {
+			isa = PBXGroup;
+			children = (
+				B2CF630F1949EEB200992E65 /* defs.h */,
+				B2CF63041949EEB200992E65 /* options.h */,
+			);
+			name = Internals;
 			sourceTree = "<group>";
 		};
 		B2CF632D1949F12500992E65 /* Libraries */ = {

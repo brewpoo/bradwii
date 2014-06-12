@@ -37,4 +37,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define FPAUTOTUNE_D_MULTIPLIER FIXEDPOINTCONSTANT(AUTOTUNE_D_MULTIPLIER)
 #define FPONEOVERAUTOTUNE_D_MULTIPLIER FIXEDPOINTCONSTANT(1.0/AUTOTUNE_D_MULTIPLIER)
 
-void autotune(fixedpointnum *angleerror,unsigned char startingorstopping);
+void autotune(fixedpointnum *angleError,unsigned char startingOrStopping);

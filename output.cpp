@@ -59,19 +59,19 @@ void init_outputs() {
     lib_digitalio_initpin(MOTOR_0_PIN, DIGITALOUTPUT);
     lib_digitalio_initpin(MOTOR_1_PIN, DIGITALOUTPUT);
     lib_digitalio_initpin(MOTOR_2_PIN, DIGITALOUTPUT);
-#if (NUMMOTORS>3)
+#if (NUM_MOTORS>3)
     lib_digitalio_initpin(MOTOR_3_PIN, DIGITALOUTPUT);
 #endif
-#if (NUMMOTORS>4)
+#if (NUM_MOTORS>4)
     lib_digitalio_initpin(MOTOR_4_PIN, DIGITALOUTPUT);
     lib_digitalio_initpin(MOTOR_5_PIN, DIGITALOUTPUT);
 #endif
    
-#if (NUMMOTORS>0)
+#if (NUM_MOTORS>0)
     set_all_motor_outputs(MIN_MOTOR_OUTPUT);
 #endif
     
-#if (NUMSERVOS>0)
+#if (NUM_SERVOS>0)
     set_all_servo_outputs(SERVO_MIDPOINT);
 #endif
    
@@ -99,36 +99,36 @@ void set_motor_output(unsigned char motornum, unsigned char motorchannel,fixedpo
     if (value>MAX_MOTOR_OUTPUT) value=MAX_MOTOR_OUTPUT;
     set_output(motorchannel,value);
    
-    global.motoroutputvalue[motornum]=value;
+    global.motorOutputValue[motornum]=value;
 }
    
 void set_all_motor_outputs(int value) {
-    for (int x=0;x<NUMMOTORS;++x)
-        global.motoroutputvalue[x]=value;
+    for (int x=0;x<NUM_MOTORS;++x)
+        global.motorOutputValue[x]=value;
 
     set_output(MOTOR_0_CHANNEL,value);
     set_output(MOTOR_1_CHANNEL,value);
     set_output(MOTOR_2_CHANNEL,value);
-#if (NUMMOTORS>3)
+#if (NUM_MOTORS>3)
     set_output(MOTOR_3_CHANNEL,value);
 #endif
-#if (NUMMOTORS>4)
+#if (NUM_MOTORS>4)
     set_output(MOTOR_4_CHANNEL,value);
     set_output(MOTOR_5_CHANNEL,value);
 #endif
-#if (NUMMOTORS>6)
+#if (NUM_MOTORS>6)
     set_output(MOTOR_6_CHANNEL,value);
     set_output(MOTOR_7_CHANNEL,value);
 #endif
 }
 
 void set_all_servo_outputs(int value) {
-#if (NUMSERVOS>0)
-    for (int x=0;x<NUMSERVOS;++x)
-        global.servooutputvalue[x]=value;
+#if (NUM_SERVOS>0)
+    for (int x=0;x<NUM_SERVOS;++x)
+        global.servoOutputValue[x]=value;
     
     set_output(SERVO_0_CHANNEL,value);
-#if (NUMSERVOS>1)
+#if (NUM_SERVOS>1)
     set_output(SERVO_1_CHANNEL,value);
 #endif
 #endif
