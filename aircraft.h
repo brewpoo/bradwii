@@ -15,13 +15,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// default to QUADX if no configuration was chosen
-#ifndef AIRCRAFT_CONFIGURATION
-#define AIRCRAFT_CONFIGURATION QUADX
-#endif
+#include "options.h"
+#include "config.h"
 
 // set aircraft type dependant defines here
-#if (AIRCRAFT_CONFIGURATION==OCTOX8) | (AIRCRAFT_CONFIGURATION==OCTOFLATP) | (AIRCRAFT_CONFIGURATION==OCTOFLATX)
+#if (AIRCRAFT_CONFIGURATION == OCTOX8) | (AIRCRAFT_CONFIGURATION==OCTOFLATP) | (AIRCRAFT_CONFIGURATION==OCTOFLATX)
   #define NUMMOTORS 8
   #define NUMSERVOS 0
 #elif (AIRCRAFT_CONFIGURATION==Y6) | (AIRCRAFT_CONFIGURATION==HEX6)
@@ -33,7 +31,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #elif (AIRCRAFT_CONFIGURATION==TRI)
   #define NUMMOTORS 3
   #define NUMSERVOS 1
-#elif (AIRCRAFT_CONFIGURATION=BI)
+#elif (AIRCRAFT_CONFIGURATION==BI)
   #define NUMMOTORS 2
   #define NUMSERVOS 2
+#else
+  #error "Need to define an aircraft type"
 #endif
+
