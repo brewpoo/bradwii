@@ -65,6 +65,7 @@ typedef struct {
    fixedpointnum altitude_when_armed;                  // The altitude when arming established
    unsigned int motoroutputvalue[NUMMOTORS];         // Output values to send to our motors, from 1000 to 2000
    unsigned int motor[NUMMOTORS];
+   unsigned int servooutputvalue[NUMSERVOS];         // Output values to send to our motors, from 1000 to 2000
    unsigned int servo[NUMSERVOS];
    unsigned long activecheckboxitems;               // Bits for each checkbox item to show which are currently active
    unsigned long previousactivecheckboxitems;      // The previous state of these bits so we can tell when they turn on and off
