@@ -270,20 +270,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       #define LED1_ON DIGITALON
    #endif
 
-   #define MOTOR_0_CHANNEL (OUTPUT_TIMER3 | OUTPUT_CHANNELC)
-   #define MOTOR_0_PIN (DIGITALPORTE | 3)
-   #define MOTOR_1_CHANNEL (OUTPUT_TIMER3 | OUTPUT_CHANNELA)
-   #define MOTOR_1_PIN (DIGITALPORTE | 4)
-   #define MOTOR_2_CHANNEL (OUTPUT_TIMER4 | OUTPUT_CHANNELA)
-   #define MOTOR_2_PIN (DIGITALPORTH | 3)
-   #define MOTOR_3_CHANNEL (OUTPUT_TIMER3 | OUTPUT_CHANNELB)
-   #define MOTOR_3_PIN (DIGITALPORTE | 5)
-
-   #define MOTOR_4_CHANNEL (OUTPUT_TIMER4 | OUTPUT_CHANNELB)
-   #define MOTOR_4_PIN (DIGITALPORTH | 4)
-   #define MOTOR_5_CHANNEL (OUTPUT_TIMER4 | OUTPUT_CHANNELC)
-   #define MOTOR_5_PIN (DIGITALPORTH | 5)
-
    #define D10_PIN (DIGITALPORTB | 4) // Pin 23 - PB4/OC2A
    #define D9_PIN  (DIGITALPORTH | 6) // Pin 18 - PH6/OC2B
    #define D8_PIN  (DIGITALPORTH | 5) // Pin 17 - PH5/OC4C
@@ -307,6 +293,25 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
    #define D44_PWM (OUTPUT_TIMER5 | OUTPUT_CHANNELC)
    #define D45_PWM (OUTPUT_TIMER5 | OUTPUT_CHANNELB)
    #define D46_PWM (OUTPUT_TIMER5 | OUTPUT_CHANNELA)
+
+    #define MOTOR_0_CHANNEL D8_PWM
+    #define MOTOR_0_PIN     D8_PIN
+    #define MOTOR_1_CHANNEL D7_PWM
+    #define MOTOR_1_PIN     D7_PIN
+    #define MOTOR_2_CHANNEL D6_PWM
+    #define MOTOR_2_PIN     D6_PIN
+    #define MOTOR_3_CHANNEL D5_PWM
+    #define MOTOR_3_PIN     D5_PIN
+
+    #define MOTOR_4_CHANNEL D10_PWM
+    #define MOTOR_4_PIN     D10_PIN
+    #define MOTOR_5_CHANNEL D9_PWM
+    #define MOTOR_5_PIN     D9_PIN
+
+    #define SERVO_0_CHANNEL D3_PWM
+    #define SERVO_0_PIN     D3_PIN
+    #define SERVO_1_CHANNEL D2_PWM
+    #define SERVO_1_PIN     D2_PIN
 
 #elif (MICROCONTROLLER_TYPE==MEGA328P)
    #define THROTTLE_RX_INPUT (DIGITALPORTD | 2)
@@ -444,5 +449,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // default gain scheduling
 #ifndef GAIN_SCHEDULING_FACTOR
    #define GAIN_SCHEDULING_FACTOR 1.0
+#endif
+
+#ifndef SERVO_MIDPOINT
+    #define SERVO_MIDPOINT 1500
 #endif
 
