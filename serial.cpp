@@ -124,6 +124,8 @@ void senderrorheader(unsigned char portnumber) {
    
 void evaluatecommand(unsigned char portnumber,unsigned char *data) {
     unsigned char command=serialcommand[portnumber];
+    
+    
     if (command==MSP_IDENT) { // send rx data
         sendgoodheader(portnumber,7);
         sendandchecksumcharacter(portnumber,VERSION);
@@ -178,18 +180,28 @@ void evaluatecommand(unsigned char portnumber,unsigned char *data) {
         sendandchecksumint(portnumber,lib_i2c_error_count); // i2c error count
         sendandchecksumint(portnumber,CAPABILITES); // baro mag, gps, sonar
         sendandchecksumdata(portnumber,(unsigned char *)&global.activecheckboxitems,4); // options1
-    } else if (command==MSP_MOTOR) { // send motor output data
-      sendgoodheader(portnumber,16);
-      for (int x=0;x<8;++x)
-         {
-         if (x < NUMMOTORS)
-            sendandchecksumint(portnumber,global.motoroutputvalue[x]); // current motor value
-         else
-            sendandchecksumint(portnumber,0);
-         }
-      }
-   else if (command==MSP_PID)
-      { // send pid data
+    } else if (command==MSP_MOTOR) {
+        // send motor output data
+        sendgoodheader(portnumber,16);
+        for (int x=0;x<8;++x) {
+            if (x < NUMMOTORS) {
+                sendandchecksumint(portnumber,global.motoroutputvalue[x]); // current motor value
+            } else {
+                sendandchecksumint(portnumber,0);
+            }
+        }
+    } else if (command==MSP_SERVO) {
+        // send servo output data
+        sendgoodheader(portnumber,16);
+        for (int x=0;x<8;++x) {
+            if (x < NUMSERVOS) {
+                sendandchecksumint(portnumber,global.servooutputvalue[x]); // current servo value
+            } else {
+                sendandchecksumint(portnumber,0);
+            }
+        }
+    } else if (command==MSP_PID) {
+        // send pid data
       sendgoodheader(portnumber,3*NUMPIDITEMS);
       for (int x=0;x<NUMPIDITEMS;++x)
          {

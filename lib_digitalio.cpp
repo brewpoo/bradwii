@@ -141,7 +141,7 @@ unsigned char lib_digitalio_getinput(unsigned char pinnumber) {
 #ifdef USEDIGITALPORTL
    GETDIGITALINPUTMACRO(DIGITALPORTL,PINL,pinnumber);
 #endif
-   }
+}
 
 #define SETDIGITALOUTPUTMACRO(value,myport,avrport,pinnumber) \
    if (port==myport) \
@@ -150,45 +150,44 @@ unsigned char lib_digitalio_getinput(unsigned char pinnumber) {
       else avrport &= ~(1 << pinnumber);\
       }\
       
-void lib_digitalio_setoutput(unsigned char pinnumber,unsigned char value)
-   {
-   unsigned char port=pinnumber & 0xf0;
-   pinnumber &= 0x0f;
+void lib_digitalio_setoutput(unsigned char pinnumber,unsigned char value) {
+    unsigned char port=pinnumber & 0xf0;
+    pinnumber &= 0x0f;
 
 #ifdef USEDIGITALPORTB
-   SETDIGITALOUTPUTMACRO(value,DIGITALPORTB,PORTB,pinnumber);
+    SETDIGITALOUTPUTMACRO(value,DIGITALPORTB,PORTB,pinnumber);
 #endif
 #ifdef USEDIGITALPORTC
-   SETDIGITALOUTPUTMACRO(value,DIGITALPORTC,PORTC,pinnumber);
+    SETDIGITALOUTPUTMACRO(value,DIGITALPORTC,PORTC,pinnumber);
 #endif
 #ifdef USEDIGITALPORTD
-   SETDIGITALOUTPUTMACRO(value,DIGITALPORTD,PORTD,pinnumber);
+    SETDIGITALOUTPUTMACRO(value,DIGITALPORTD,PORTD,pinnumber);
 #endif
 #ifdef USEDIGITALPORTE
-   SETDIGITALOUTPUTMACRO(value,DIGITALPORTE,PORTE,pinnumber);
+    SETDIGITALOUTPUTMACRO(value,DIGITALPORTE,PORTE,pinnumber);
 #endif
 #ifdef USEDIGITALPORTF
-   SETDIGITALOUTPUTMACRO(value,DIGITALPORTF,PORTF,pinnumber);
+    SETDIGITALOUTPUTMACRO(value,DIGITALPORTF,PORTF,pinnumber);
 #endif
 #ifdef USEDIGITALPORTG
-   SETDIGITALOUTPUTMACRO(value,DIGITALPORTG,PORTG,pinnumber);
+    SETDIGITALOUTPUTMACRO(value,DIGITALPORTG,PORTG,pinnumber);
 #endif
 #ifdef USEDIGITALPORTH
-   SETDIGITALOUTPUTMACRO(value,DIGITALPORTH,PORTH,pinnumber);
+    SETDIGITALOUTPUTMACRO(value,DIGITALPORTH,PORTH,pinnumber);
 #endif
 #ifdef USEDIGITALPORTI
-   SETDIGITALOUTPUTMACRO(value,DIGITALPORTI,PORTI,pinnumber);
+    SETDIGITALOUTPUTMACRO(value,DIGITALPORTI,PORTI,pinnumber);
 #endif
 #ifdef USEDIGITALPORTJ
-   SETDIGITALOUTPUTMACRO(value,DIGITALPORTJ,PORTJ,pinnumber);
+    SETDIGITALOUTPUTMACRO(value,DIGITALPORTJ,PORTJ,pinnumber);
 #endif
 #ifdef USEDIGITALPORTK
-   SETDIGITALOUTPUTMACRO(value,DIGITALPORTK,PORTK,pinnumber);
+    SETDIGITALOUTPUTMACRO(value,DIGITALPORTK,PORTK,pinnumber);
 #endif
 #ifdef USEDIGITALPORTL
-   SETDIGITALOUTPUTMACRO(value,DIGITALPORTL,PORTL,pinnumber);
+    SETDIGITALOUTPUTMACRO(value,DIGITALPORTL,PORTL,pinnumber);
 #endif
-   }
+}
 
 
 #define SETUPINTMACRO(INTERRUPTxPORTANDPIN,INTERRUPTxPORT,digitalcallbackx,INTx_vect) \
