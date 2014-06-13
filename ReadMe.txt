@@ -1,3 +1,7 @@
+This is a fork of the BradWii project.
+
+From the original author:
+
 BradWii
 
 Introduction:
