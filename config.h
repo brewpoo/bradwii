@@ -49,7 +49,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //#define RX_CHANNEL_ORDER         PITCH_INDEX,ROLL_INDEX,THROTTLE_INDEX,YAW_INDEX,AUX1_INDEX,AUX2_INDEX,AUX3_INDEX,AUX4_INDEX,8,9,10,11 //For some Hitec/Sanwa/Others
 
 // uncomment to set the number of RX channels, otherwise it will default to what the control board/receiver can handle
-#define RXNUMCHANNELS 6
+#define RX_NUM_CHANNELS 6
 
 // uncomment to allow arming and disarming with the sticks:
 // Arming and disarming only happen at low throttle
@@ -99,6 +99,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // Choose output ranges (in microseconds)
 #define MIN_MOTOR_OUTPUT 1000
 #define MAX_MOTOR_OUTPUT 2000
+
+// un-comment if you don't want to include autotune code
+//#define NO_FAILSAFE
 #define FAILSAFE_MOTOR_OUTPUT 1200 // throttle setting for bringing the aircraft down at a safe speed
 
 // Un-comment and set to YES or NO to override the default value.
@@ -132,7 +135,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //#define BAROMETER_TYPE NO_BAROMETER
 
 // Get your magnetic decliniation from here : http://magnetic-declination.com/
-#define MAG_DECLINATION_DEGREES  -13.4 // for Hyde Park, NY
+//#define MAG_DECLINATION_DEGREES  -13.4 // for Hyde Park, NY
+#define MAG_DECLINATION_DEGREES  -13.52 // for Sayville, NY
 
 // ESCs calibration
 // To calibrate all ESCs connected to the aircraft at the same time (useful to avoid unplugging/re-plugging each ESC)
@@ -163,6 +167,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // Leave comment to use the default value.
 //#define GYRO_LOW_PASS_FILTER 2
 
+// un-comment if you don't want to include uncrashable code
+//#define NO_UNCRASHABLE
 #define UNCRAHSABLE_MAX_ALTITUDE_OFFSET 30.0 // 30 meters above where uncrashability was enabled
 #define UNCRAHSABLE_RADIUS 50.0 // 50 meter radius
 
@@ -171,7 +177,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // A value of zero is no gain scheduling.  A value of 1.0 (the default) results in 50% gains at zero throttle, 100% gains at mid
 // throttle, and 150% gains at full throttle.
 // Range is 0 to 2.0
-//#define GAIN_SCHEDULING_FACTOR 1.0
+#define GAIN_SCHEDULING_FACTOR 1.0
 
 // Uncomment if using DC motors
 //#define DC_MOTORS

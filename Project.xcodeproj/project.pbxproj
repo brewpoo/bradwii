@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXFileReference section */
+		B238AEB4194B385B00B860E8 /* uncrashable.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = uncrashable.cpp; sourceTree = SOURCE_ROOT; };
+		B238AEB5194B387100B860E8 /* uncrashable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = uncrashable.h; sourceTree = SOURCE_ROOT; };
+		B238AEB6194B5B4F00B860E8 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
+		B238AEB7194B5B8100B860E8 /* ReadMe.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ReadMe.txt; sourceTree = "<group>"; };
 		B2CF62F61949EEB200992E65 /* eeprom.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = eeprom.cpp; sourceTree = SOURCE_ROOT; };
 		B2CF62F71949EEB200992E65 /* bradwii.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bradwii.h; sourceTree = SOURCE_ROOT; };
 		B2CF62F81949EEB200992E65 /* bradwii.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = bradwii.cpp; sourceTree = SOURCE_ROOT; };
@@ -24,7 +28,7 @@
 		B2CF63041949EEB200992E65 /* options.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = options.h; sourceTree = SOURCE_ROOT; };
 		B2CF63051949EEB200992E65 /* navigation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = navigation.h; sourceTree = SOURCE_ROOT; };
 		B2CF63061949EEB200992E65 /* navigation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = navigation.cpp; sourceTree = SOURCE_ROOT; };
-		B2CF63071949EEB200992E65 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = SOURCE_ROOT; };
+		B2CF63071949EEB200992E65 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = SOURCE_ROOT; usesTabs = 1; };
 		B2CF63081949EEB200992E65 /* imu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imu.h; sourceTree = SOURCE_ROOT; };
 		B2CF63091949EEB200992E65 /* imu.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = imu.cpp; sourceTree = SOURCE_ROOT; };
 		B2CF630A1949EEB200992E65 /* gyro.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gyro.h; sourceTree = SOURCE_ROOT; };
@@ -70,6 +74,8 @@
 				A27328C014D9F0BB00E39B15 /* Source */,
 				B2CF6357194A1E2000992E65 /* User Editable Files */,
 				B2CF63071949EEB200992E65 /* Makefile */,
+				B238AEB6194B5B4F00B860E8 /* LICENSE */,
+				B238AEB7194B5B8100B860E8 /* ReadMe.txt */,
 			);
 			sourceTree = "<group>";
 		};
@@ -83,6 +89,8 @@
 				B2CF63191949EEB200992E65 /* aircraft.h */,
 				B2CF63181949EEB200992E65 /* autotune.cpp */,
 				B2CF63171949EEB200992E65 /* autotune.h */,
+				B238AEB4194B385B00B860E8 /* uncrashable.cpp */,
+				B238AEB5194B387100B860E8 /* uncrashable.h */,
 				B2CF63161949EEB200992E65 /* baro.cpp */,
 				B2CF63151949EEB200992E65 /* baro.h */,
 				B2CF62F81949EEB200992E65 /* bradwii.cpp */,

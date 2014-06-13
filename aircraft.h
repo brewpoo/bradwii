@@ -38,3 +38,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   #error "Need to define an aircraft type"
 #endif
 
+void compute_mix();

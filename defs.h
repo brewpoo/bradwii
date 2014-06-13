@@ -112,7 +112,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       #define GPS_TYPE NO_GPS
    #endif
    #if (RX_TYPE==RX_NORMAL)
-      #define RXNUMCHANNELS 5
+      #define RX_NUM_CHANNELS 5
    #elif ((RX_TYPE==RX_DSM2_1024 || RX_TYPE==RX_DSM2_2048) && !defined(RX_DSM2_SERIAL_PORT))
       #define RX_DSM2_SERIAL_PORT 1
    #endif
@@ -233,11 +233,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   #error You need to define a Control Board in config.h!
 #endif
 
-#ifndef RXNUMCHANNELS
+#ifndef RX_NUM_CHANNELS
    #if (RX_TYPE==RX_DSM2_1024 || RX_TYPE==RX_DSM2_2048 || RX_TYPE==RX_CPPM)
-      #define RXNUMCHANNELS 8
+      #define RX_NUM_CHANNELS 8
    #else
-      #define RXNUMCHANNELS 6
+      #define RX_NUM_CHANNELS 6
    #endif
 #endif
 
@@ -256,7 +256,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       #define PCINTERRUPT20PORTANDPIN AUX1_RX_INPUT
       #define AUX2_RX_INPUT (DIGITALPORTK | 5)
       #define PCINTERRUPT21PORTANDPIN AUX2_RX_INPUT
-      #if (RXNUMCHANNELS>6)
+      #if (RX_NUM_CHANNELS>6)
          #define AUX3_RX_INPUT (DIGITALPORTK | 6)
          #define PCINTERRUPT22PORTANDPIN AUX3_RX_INPUT
          #define AUX4_RX_INPUT (DIGITALPORTK | 7)
@@ -329,7 +329,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
          #define AUX2_RX_INPUT (DIGITALPORTB | 5)
          #define PCINTERRUPT5PORTANDPIN AUX2_RX_INPUT
       #endif
-      #if (RXNUMCHANNELS>6)
+      #if (RX_NUM_CHANNELS>6)
          #define AUX3_RX_INPUT (DIGITALPORTC | 0)
          #define PCINTERRUPT8PORTANDPIN AUX3_RX_INPUT
          #define AUX4_RX_INPUT (DIGITALPORTC | 1)
@@ -366,7 +366,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
          #define AUX2_RX_INPUT (DIGITALPORTB | 7)
          #define PCINTERRUPT7PORTANDPIN AUX2_RX_INPUT
       #endif
-      #if (RXNUMCHANNELS>6)
+      #if (RX_NUM_CHANNELS>6)
          #define AUX3_RX_INPUT (DIGITALPORTD | 3)
          #define INTERRUPT3PORTANDPIN AUX3_RX_INPUT
          #define AUX4_RX_INPUT (DIGITALPORTD | 2)

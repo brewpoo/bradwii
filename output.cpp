@@ -211,3 +211,20 @@ void set_output(unsigned char outputchannel, unsigned int value) {
     }
 #endif
 }
+
+void write_servo_outputs() {
+    
+}
+
+void write_motor_outputs() {
+    //
+    //#if (AIRCRAFT_CONFIGURATION==QUADX)
+    //          set_motor_output(0,MOTOR_0_CHANNEL,throttleOutput-pidoutput[ROLL_INDEX]+pidoutput[PITCH_INDEX]-pidoutput[YAW_INDEX]);
+    //          set_motor_output(1,MOTOR_1_CHANNEL,throttleOutput-pidoutput[ROLL_INDEX]-pidoutput[PITCH_INDEX]+pidoutput[YAW_INDEX]);
+    //          set_motor_output(2,MOTOR_2_CHANNEL,throttleOutput+pidoutput[ROLL_INDEX]+pidoutput[PITCH_INDEX]+pidoutput[YAW_INDEX]);
+    //          set_motor_output(3,MOTOR_3_CHANNEL,throttleOutput+pidoutput[ROLL_INDEX]-pidoutput[PITCH_INDEX]-pidoutput[YAW_INDEX]);
+    //#elif (AIRCRAFT_CONFIGURATION==TRI)
+    //#endif
+    //      }
+    
+}

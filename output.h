@@ -33,3 +33,6 @@ void set_output(unsigned char outputchannel, unsigned int value);
 void set_motor_output(unsigned char motornum, unsigned char motorchannel,fixedpointnum fpvalue);
 void set_all_motor_outputs(int value);
 void set_all_servo_outputs(int value);
+
+void write_servo_outputs();
+void write_motor_outputs();

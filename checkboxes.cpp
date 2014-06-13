@@ -46,7 +46,7 @@ void check_checkbox_items() {
     global.activeCheckboxItems=0;
    
     unsigned int mask=0; // a mask of what aux states are true
-#if (RXNUMCHANNELS>4)
+#if (RX_NUM_CHANNELS>4)
     if (global.rxValues[AUX1_INDEX]<FPAUXMIDRANGELOW) // low
         mask |= (1<<0);
     else if (global.rxValues[AUX1_INDEX]>FPAUXMIDRANGEHIGH) // high
@@ -54,7 +54,7 @@ void check_checkbox_items() {
     else mask |=(1<<1); // mid
 #endif
 
-#if (RXNUMCHANNELS>5)
+#if (RX_NUM_CHANNELS>5)
     if (global.rxValues[AUX2_INDEX]<FPAUXMIDRANGELOW) // low
         mask |= (1<<3);
     else if (global.rxValues[AUX2_INDEX]>FPAUXMIDRANGEHIGH) // high
@@ -62,7 +62,7 @@ void check_checkbox_items() {
     else mask |=(1<<4); //mid
 #endif
 
-#if (RXNUMCHANNELS>6)
+#if (RX_NUM_CHANNELS>6)
     if (global.rxValues[AUX3_INDEX]<FPAUXMIDRANGELOW) // low
         mask |= (1<<6);
     else if (global.rxValues[AUX3_INDEX]>FPAUXMIDRANGEHIGH) // high
@@ -70,7 +70,7 @@ void check_checkbox_items() {
     else mask |=(1<<7); //mid
 #endif
 
-#if (RXNUMCHANNELS>7)
+#if (RX_NUM_CHANNELS>7)
     if (global.rxValues[AUX4_INDEX]<FPAUXMIDRANGELOW) // low
         mask |= (1<<9);
     else if (global.rxValues[AUX4_INDEX]>FPAUXMIDRANGEHIGH) // high

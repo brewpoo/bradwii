@@ -45,7 +45,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define NAVIGATION_MODE_POSITION_HOLD 1
 #define NAVIGATION_MODE_RETURN_TO_HOME 2
 
-
 // put all of the global variables into one structure to make them easy to find
 typedef struct {
    unsigned char userSettingsFromEeprom;            // set to 1 if user settings were read from eeprom
@@ -59,10 +58,12 @@ typedef struct {
    fixedpointnum estimatedDownVector[3];            // A unit vector (approximately) poining in the direction we think down is relative to the aircraft
    fixedpointnum estimatedWestVector[3];            // A unit vector (approximately) poining in the direction we think west is relative to the aircraft
    fixedpointnum currentEstimatedEulerAttitude[3]; // Euler Angles in degrees of how much we think the aircraft is Rolled, Pitched, and Yawed (from North)
-   fixedpointnum rxValues[RXNUMCHANNELS];            // The values of the RX inputs, ranging from -1.0 to 1.0
+   fixedpointnum rxValues[RX_NUM_CHANNELS];            // The values of the RX inputs, ranging from -1.0 to 1.0
    fixedpointnum compassVector[3];                  // A unit vector (approximately) poining in the direction our 3d compass is pointing
    fixedpointnum headingWhenArmed;                  // the heading we were pointing when arming was established
    fixedpointnum altitudeWhenArmed;                  // The altitude when arming established
+    unsigned char calibratingCompass;
+    unsigned char calibratingAccAndGyro;
    unsigned int motorOutputValue[NUM_MOTORS];         // Output values to send to our motors, from 1000 to 2000
    unsigned int motor[NUM_MOTORS];
    unsigned int servoOutputValue[NUM_SERVOS];         // Output values to send to our motors, from 1000 to 2000

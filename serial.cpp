@@ -136,7 +136,7 @@ void evaluate_command(unsigned char portnumber,unsigned char *data) {
         send_good_header(portnumber,16);
         for (int x=0;x<8;++x) {
             int value=0;
-            if (x<RXNUMCHANNELS) value=((global.rxValues[x]*500L)>>FIXEDPOINTSHIFT)+1500;
+            if (x<RX_NUM_CHANNELS) value=((global.rxValues[x]*500L)>>FIXEDPOINTSHIFT)+1500;
 
             send_and_checksum_data(portnumber,(unsigned char *)&value,2);
         }
@@ -158,7 +158,10 @@ void evaluate_command(unsigned char portnumber,unsigned char *data) {
         if (!global.armed) calibrate_compass();
         send_good_header(portnumber,0);
     } else if (command==MSP_ACC_CALIBRATION) { // send attitude data
-        if (!global.armed) calibrate_gyro_and_accelerometer();
+        if (!global.armed) {
+            global.calibratingAccAndGyro=1;
+            calibrate_gyro_and_accelerometer();
+        }
         send_good_header(portnumber,0);
     } else if (command==MSP_RAW_IMU) { // send attitude data
         send_good_header(portnumber,18);
@@ -349,158 +352,127 @@ void serial_check_port_for_action(unsigned char portnumber) {
             if (serialchecksum[portnumber]==data[serialdatasize[portnumber]]) {
                evaluate_command(portnumber,data);
             }
-            serialreceivestate[portnumber]=SERIALSTATEIDLE;
-        }
-         else return;
-         }
-      else
-         {
-         unsigned char c=lib_serial_getchar(portnumber);
+                serialreceivestate[portnumber]=SERIALSTATEIDLE;
+            } else return;
+        } else {
+            unsigned char c=lib_serial_getchar(portnumber);
          
-         if (serialreceivestate[portnumber]==SERIALSTATEIDLE)
-            {
-            if (c=='$') serialreceivestate[portnumber]=SERIALSTATEGOTDOLLARSIGN;
+            if (serialreceivestate[portnumber]==SERIALSTATEIDLE) {
+                if (c=='$') serialreceivestate[portnumber]=SERIALSTATEGOTDOLLARSIGN;
+            } else if (serialreceivestate[portnumber]==SERIALSTATEGOTDOLLARSIGN) {
+                if (c=='M') serialreceivestate[portnumber]=SERIALSTATEGOTM;
+                else serialreceivestate[portnumber]=SERIALSTATEIDLE;
+            } else if (serialreceivestate[portnumber]==SERIALSTATEGOTM) {
+                if (c=='<') serialreceivestate[portnumber]=SERIALSTATEGOTLESSTHANSIGN;
+                else serialreceivestate[portnumber]=SERIALSTATEIDLE;
+            } else if (serialreceivestate[portnumber]==SERIALSTATEGOTLESSTHANSIGN) {
+                serialdatasize[portnumber]=c;
+                if (c>MAXPAYLOADSIZE) serialreceivestate[portnumber]=SERIALSTATEIDLE;
+                else {
+                    serialchecksum[portnumber]=c;
+                    serialreceivestate[portnumber]=SERIALSTATEGOTDATASIZE;
+                }
+            } else if (serialreceivestate[portnumber]==SERIALSTATEGOTDATASIZE) {
+                serialcommand[portnumber]=c;
+                serialchecksum[portnumber]^=c;
+                serialreceivestate[portnumber]=SERIALSTATEGOTCOMMAND;
             }
-         else if (serialreceivestate[portnumber]==SERIALSTATEGOTDOLLARSIGN)
-            {
-            if (c=='M') serialreceivestate[portnumber]=SERIALSTATEGOTM;
-            else serialreceivestate[portnumber]=SERIALSTATEIDLE;
-            }
-         else if (serialreceivestate[portnumber]==SERIALSTATEGOTM)
-            {
-            if (c=='<') serialreceivestate[portnumber]=SERIALSTATEGOTLESSTHANSIGN;
-            else serialreceivestate[portnumber]=SERIALSTATEIDLE;
-            }
-         else if (serialreceivestate[portnumber]==SERIALSTATEGOTLESSTHANSIGN)
-            {
-            serialdatasize[portnumber]=c;
-            if (c>MAXPAYLOADSIZE) serialreceivestate[portnumber]=SERIALSTATEIDLE;
-            else
-               {
-               serialchecksum[portnumber]=c;
-               serialreceivestate[portnumber]=SERIALSTATEGOTDATASIZE;
-               }
-            }
-         else if (serialreceivestate[portnumber]==SERIALSTATEGOTDATASIZE)
-            {
-            serialcommand[portnumber]=c;
-            serialchecksum[portnumber]^=c;
-            serialreceivestate[portnumber]=SERIALSTATEGOTCOMMAND;
-            }
-         }
-      }
-   }
+        }
+    }
+}
 
 //#define SERIALTEXTDEBUG
 #ifdef SERIALTEXTDEBUG
-void serial_print_number(char portnumber,long num,int digits,int decimals,char usebuffer)
-   // prints a int number, right justified, using digits # of digits, puting a
-   // decimal decimals places from the end, and using blank
-   // to fill all blank spaces
-   {
-   char stg[12];
-   char *ptr;
-   int x;
+void serial_print_number(char portnumber,long num,int digits,int decimals,char usebuffer) {
+    // prints a int number, right justified, using digits # of digits, puting a
+    // decimal decimals places from the end, and using blank
+    // to fill all blank spaces
 
-   ptr=stg+11;
+    char stg[12];
+    char *ptr;
+    int x;
+
+    ptr=stg+11;
    
-   *ptr='\0';
-   if (num<0)
-      {
-      num=-num;
-      *(--ptr)='-';
-      }
-   else
+    *ptr='\0';
+    if (num<0) {
+        num=-num;
+        *(--ptr)='-';
+    } else {
       *(--ptr)=' ';
+    }
       
-   for (x=1;x<=digits;++x)
-      {
-      if (num==0)
-         *(--ptr)=' ';
-      else
-         {
-         *(--ptr)=48+num-(num/10)*10;
-         num/=10;
-         }
-      if (x==decimals) *(--ptr)='.';
-      }
-   lib_serial_sendstring(portnumber,ptr);
-   }
+    for (x=1;x<=digits;++x) {
+        if (num==0) *(--ptr)=' ';
+        else {
+            *(--ptr)=48+num-(num/10)*10;
+            num/=10;
+        }
+        if (x==decimals) *(--ptr)='.';
+    }
+    lib_serial_sendstring(portnumber,ptr);
+}
 
-void serial_print_fixedpoint(char portnumber,fixedpointnum fp)
-   {
-   serial_print_number(portnumber,lib_fp_multiply(fp,1000),7,3,1);
-   lib_serial_sendstring(portnumber,"\n\r");
-   }
+void serial_print_fixedpoint(char portnumber,fixedpointnum fp) {
+    serial_print_number(portnumber,lib_fp_multiply(fp,1000),7,3,1);
+    lib_serial_sendstring(portnumber,"\n\r");
+}
    
-void serial_check_port_for_actiontest(char portnumber)
-   {
-   int numcharsavailable=lib_serial_numcharsavailable(portnumber);
-   if (numcharsavailable)
-      {
-      char c=lib_serial_getchar(portnumber);
-      lib_serial_sendstring(portnumber,"got char\n\r");
+void serial_check_port_for_actiontest(char portnumber) {
+    int numcharsavailable=lib_serial_numcharsavailable(portnumber);
+    if (numcharsavailable) {
+        char c=lib_serial_getchar(portnumber);
+        lib_serial_sendstring(portnumber,"got char\n\r");
       
-      if (c=='r')
-         { // receiver values
-         for (int x=0;x<6;++x)
-            {
-            serial_print_fixedpoint(portnumber,global.rxValues[x]);      
+        if (c=='r') {
+            // receiver values
+            for (int x=0;x<6;++x) {
+                serial_print_fixedpoint(portnumber,global.rxValues[x]);
             }
-         }
-      else if (c=='g')
-         { // gyro values
-         for (int x=0;x<3;++x)
-            {
-            serial_print_fixedpoint(portnumber,global.gyrorate[x]);
+        } else if (c=='g') {
+             // gyro values
+            for (int x=0;x<3;++x) {
+                serial_print_fixedpoint(portnumber,global.gyrorate[x]);
             }
-         }
-      else if (c=='a')
-         { // acc g values
-         for (int x=0;x<3;++x)
-            {
-            serial_print_fixedpoint(portnumber,global.correctedVectorGs[x]);
+        } else if (c=='a') {
+            // acc g values
+            for (int x=0;x<3;++x) {
+                serial_print_fixedpoint(portnumber,global.correctedVectorGs[x]);
             }
-         }
-      else if (c=='t')
-         { // atttude angle values
-         for (int x=0;x<3;++x)
-            {
-            serial_print_fixedpoint(portnumber,global.currentEstimatedEulerAttitude[x]);
+        } else if (c=='t') {
+            // atttude angle values
+            for (int x=0;x<3;++x) {
+                serial_print_fixedpoint(portnumber,global.currentEstimatedEulerAttitude[x]);
             }
+         } else if (c=='e') {
+             // atttude angle values
+             serial_print_fixedpoint(portnumber,global.estimatedDownVector[0]);
+             serial_print_fixedpoint(portnumber,global.estimatedDownVector[1]);
+             serial_print_fixedpoint(portnumber,global.estimatedDownVector[2]);
+             serial_print_fixedpoint(portnumber,global.estimatedWestVector[0]);
+             serial_print_fixedpoint(portnumber,global.estimatedWestVector[1]);
+             serial_print_fixedpoint(portnumber,global.estimatedWestVector[2]);
+         } else if (c=='d') {
+             // debug values
+             for (int x=0;x<3;++x)
+                 serial_print_fixedpoint(portnumber,global.debugValue[x]);
+         } else if (c=='l') {
+             // altitude
+             serial_print_fixedpoint(portnumber,global.altitude);
+         } else if (c=='p') {
+             // atttude angle values
+             serial_print_fixedpoint(portnumber,usersettings.pid_pgain[0]);
+             serial_print_fixedpoint(portnumber,usersettings.pid_igain[0]);
+             serial_print_fixedpoint(portnumber,usersettings.pid_dgain[0]);
          }
-      else if (c=='e')
-         { // atttude angle values
-         serial_print_fixedpoint(portnumber,global.estimatedDownVector[0]);
-         serial_print_fixedpoint(portnumber,global.estimatedDownVector[1]);
-         serial_print_fixedpoint(portnumber,global.estimatedDownVector[2]);
-         serial_print_fixedpoint(portnumber,global.estimatedWestVector[0]);
-         serial_print_fixedpoint(portnumber,global.estimatedWestVector[1]);
-         serial_print_fixedpoint(portnumber,global.estimatedWestVector[2]);
-         }
-      else if (c=='d')
-         { // debug values
-         for (int x=0;x<3;++x)
-         serial_print_fixedpoint(portnumber,global.debugValue[x]);
-         }
-      else if (c=='l')
-         { // altitude 
-         serial_print_fixedpoint(portnumber,global.altitude);
-         }
-      else if (c=='p')
-         { // atttude angle values
-         serial_print_fixedpoint(portnumber,usersettings.pid_pgain[0]);
-         serial_print_fixedpoint(portnumber,usersettings.pid_igain[0]);
-         serial_print_fixedpoint(portnumber,usersettings.pid_dgain[0]);
-         }
-      lib_serial_sendstring(portnumber,"\n\r");
-      }
-   }
+        lib_serial_sendstring(portnumber,"\n\r");
+    }
+}
 #endif
 #endif
 
-void serial_check_for_action()
-   { // to be called by the main program every cycle so that we can check to see if we need to respond to incoming characters
+void serial_check_for_action() {
+    // to be called by the main program every cycle so that we can check to see if we need to respond to incoming characters
 #if (MULTIWII_CONFIG_SERIAL_PORTS & SERIALPORT0)
    serial_check_port_for_action(0);
 #endif
@@ -525,5 +497,4 @@ void serial_check_for_action()
 #if (MULTIWII_CONFIG_SERIAL_PORTS & SERIALPORTUSB)
    serial_check_port_for_action(USBPORTNUMBER);
 #endif
-   
-   }
+}

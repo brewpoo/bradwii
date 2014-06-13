@@ -17,3 +17,7 @@
 
 #include "aircraft.h"
 #include "bradwii.h"
+
+void compute_mix() {
+    
+}

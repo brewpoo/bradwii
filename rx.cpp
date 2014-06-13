@@ -34,8 +34,8 @@ extern globalstruct global;
 
 #if (RX_TYPE==RX_NORMAL)
 
-unsigned long rxtimer[RXNUMCHANNELS];
-volatile unsigned int rxrawvalues[RXNUMCHANNELS];
+unsigned long rxtimer[RX_NUM_CHANNELS];
+volatile unsigned int rxrawvalues[RX_NUM_CHANNELS];
 
 #define process_callback(INDEX)                                             \
    {                                                                              \
@@ -80,7 +80,7 @@ void aux2_callback(unsigned char interruptnumber,unsigned char newstate) {
     process_callback(AUX2_INDEX);
 }
 
-#if (RXNUMCHANNELS>6)
+#if (RX_NUM_CHANNELS>6)
 void aux3_callback(unsigned char interruptnumber,unsigned char newstate) {
     // call back will get called any time the pin changes
     process_callback(AUX3_INDEX);
@@ -94,7 +94,7 @@ void aux4_callback(unsigned char interruptnumber,unsigned char newstate) {
 #endif
 
 void init_rx() {
-    for (int x=0;x<RXNUMCHANNELS;++x)
+    for (int x=0;x<RX_NUM_CHANNELS;++x)
         global.rxValues[x]=0; // middle position
     
    global.rxValues[THROTTLE_INDEX]=FPTHROTTLELOW; // default throttle to low position
@@ -111,29 +111,29 @@ void init_rx() {
    lib_digitalio_initpin(YAW_RX_INPUT,DIGITALINPUT);
    lib_digitalio_setinterruptcallback(YAW_RX_INPUT,yaw_callback); 
 
-#if (RXNUMCHANNELS>4)
+#if (RX_NUM_CHANNELS>4)
    lib_digitalio_initpin(AUX1_RX_INPUT,DIGITALINPUT);
    lib_digitalio_setinterruptcallback(AUX1_RX_INPUT,aux1_callback); 
 #endif
 
-#if (RXNUMCHANNELS>5)
+#if (RX_NUM_CHANNELS>5)
    lib_digitalio_initpin(AUX2_RX_INPUT,DIGITALINPUT);
    lib_digitalio_setinterruptcallback(AUX2_RX_INPUT,aux2_callback); 
 #endif
 
-#if (RXNUMCHANNELS>6)
+#if (RX_NUM_CHANNELS>6)
    lib_digitalio_initpin(AUX3_RX_INPUT,DIGITALINPUT);
    lib_digitalio_setinterruptcallback(AUX3_RX_INPUT,aux3_callback); 
 #endif
 
-#if (RXNUMCHANNELS>7)
+#if (RX_NUM_CHANNELS>7)
    lib_digitalio_initpin(AUX4_RX_INPUT,DIGITALINPUT);
    lib_digitalio_setinterruptcallback(AUX4_RX_INPUT,aux4_callback); 
 #endif
 }
 
 void read_rx() {
-   for (int x=0;x<RXNUMCHANNELS;++x) {
+   for (int x=0;x<RX_NUM_CHANNELS;++x) {
       // convert from 1000-2000 range to -1 to 1 fixedpointnum range and low pass filter to remove glitches
       lib_fp_lowpassfilter(&global.rxValues[x], ((fixedpointnum)rxrawvalues[x]-1500)*131L, global.timesliver, FIXEDPOINTONEOVERONESIXTYITH, TIMESLIVEREXTRASHIFT);
    }
@@ -159,7 +159,7 @@ void read_rx() {
    #define RX_CHANNEL_ORDER         THROTTLE_INDEX,ROLL_INDEX,PITCH_INDEX,YAW_INDEX,AUX1_INDEX,AUX2_INDEX,AUX3_INDEX,AUX4_INDEX,8,9,10,11 //For Graupner/Spektrum
 #endif
 
-volatile unsigned int rxrawvalues[RXNUMCHANNELS];
+volatile unsigned int rxrawvalues[RX_NUM_CHANNELS];
 unsigned long dsm2timer;
 unsigned char dsm2state;
 unsigned char dsm2firstchar;
@@ -182,7 +182,7 @@ void dsm2serialcallback(unsigned char c) {
    } else {
        unsigned char channel = 0x0F & (dsm2firstchar >> DSM2_CHAN_SHIFT);
       
-       if (channel < RXNUMCHANNELS) {
+       if (channel < RX_NUM_CHANNELS) {
            channel=dsm2channelindex[channel];
            rxrawvalues[channel] = ((unsigned int)(dsm2firstchar & DSM2_CHAN_MASK) << 8) + c;
        }
@@ -201,7 +201,7 @@ void init_rx() {
 }
 
 void read_rx() {
-    for (int x=0;x<RXNUMCHANNELS;++x) {
+    for (int x=0;x<RX_NUM_CHANNELS;++x) {
 #if (RX_TYPE==RX_DSM2_1024)
         // convert from 0-1024 range to -1 to 1 fixedpointnum range and low pass filter to remove glitches
         lib_fp_lowpassfilter(&global.rxValues[x], ((fixedpointnum)rxrawvalues[x]-512)<<7, global.timesliver, FIXEDPOINTONEOVERONESIXTYITH, TIMESLIVEREXTRASHIFT);
@@ -220,7 +220,7 @@ void read_rx() {
 #endif
 
 unsigned char channelindex[]={RX_CHANNEL_ORDER};
-volatile unsigned int rxrawvalues[RXNUMCHANNELS];
+volatile unsigned int rxrawvalues[RX_NUM_CHANNELS];
 
 void serialsumcallback(unsigned char interruptnumber, unsigned char newstate)  {
     // gke
@@ -235,7 +235,7 @@ void serialsumcallback(unsigned char interruptnumber, unsigned char newstate)  {
         if (width > 3000) {
             global.failsafeTimer=lib_timers_starttimer();  // reset the failsafe timer
             chan = 0;
-        } else if (chan < RXNUMCHANNELS) {
+        } else if (chan < RX_NUM_CHANNELS) {
             if (width>900 && width<2050)
                 rxrawvalues[chan] = width;
 //         else
@@ -252,12 +252,12 @@ void serialsumcallback(unsigned char interruptnumber, unsigned char newstate)  {
 void read_rx() {
     unsigned char chan;
    
-    for (chan=0; chan<RXNUMCHANNELS;++chan) // convert from 1000-2000 range to -1 to 1 fixedpointnum range and low pass filter to remove glitches
+    for (chan=0; chan<RX_NUM_CHANNELS;++chan) // convert from 1000-2000 range to -1 to 1 fixedpointnum range and low pass filter to remove glitches
         lib_fp_lowpassfilter(&global.rxValues[channelindex[chan]], ((fixedpointnum)rxrawvalues[chan]-1500)*131L, global.timesliver, FIXEDPOINTONEOVERONESIXTYITH, TIMESLIVEREXTRASHIFT);
 }
 
 void init_rx() {
-    for (int x=0;x<RXNUMCHANNELS;++x)
+    for (int x=0;x<RX_NUM_CHANNELS;++x)
         global.rxValues[x]=0; // middle position
     global.rxValues[THROTTLE_INDEX]=FPTHROTTLELOW; // default throttle to low position
       

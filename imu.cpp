@@ -70,6 +70,7 @@ fixedpointnum lastBaroRawAltitude; // remember our last reading so we can calcul
 // read the acc and gyro a bunch of times and get an average of how far off they are.
 // assumes the aircraft is sitting level and still.
 void calibrate_gyro_and_accelerometer() {
+    global.calibratingAccAndGyro = 1;
     for (int x=0;x<3;++x) {
         usersettings.gyrocalibration[x]=0;
         usersettings.acccalibration[x]=0;
@@ -92,6 +93,7 @@ void calibrate_gyro_and_accelerometer() {
            lib_fp_lowpassfilter(&usersettings.acccalibration[x],-global.correctedVectorGs[x],global.timesliver,FIXEDPOINTONEOVERONE,TIMESLIVEREXTRASHIFT);
        }
    }
+    global.calibratingAccAndGyro = 0;
 }
 
 void init_imu() {
