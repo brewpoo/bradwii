@@ -50,6 +50,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define FIXEDPOINTONEOVERONESIXTYITH (60L<<FIXEDPOINTSHIFT)
 #define FIXEDPOINTONEFIFTIETH ((1L<<FIXEDPOINTSHIFT)/50)
 
+#define FIXEDPOINT_FOUR_THIRDS ((4L<<FIXEDPOINTSHIFT)/3)
+#define FIXEDPOINT_TWO_THIRDS ((2L<<FIXEDPOINTSHIFT)/3)
+
 #define FIXEDPOINTPIOVER180 1144L // pi/180 for converting degrees to radians
 
 // since time slivers can be very small, we shift them an extra 8 bits to maintain accuracy

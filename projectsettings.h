@@ -108,8 +108,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #endif
 
 #if (MICROCONTROLLER_TYPE==MEGA2560)
+    #define USEPWM2
 	#define USEPWM3
 	#define USEPWM4
+    #define USEPWM5
+
 	#define USEDIGITALPORTB
 	#define USEDIGITALPORTC
 	#define USEDIGITALPORTK

@@ -213,18 +213,35 @@ void set_output(unsigned char outputchannel, unsigned int value) {
 }
 
 void write_servo_outputs() {
+    // Store the computed numbers and write out to the channel
+#if (NUM_SERVOS>0)
+    for (int x=0;x<NUM_SERVOS;++x)
+        global.servoOutputValue[x]=global.servo[x];
     
+    set_output(SERVO_0_CHANNEL,global.servo[0]);
+#if (NUM_SERVOS>1)
+    set_output(SERVO_1_CHANNEL,global.servo[1]);
+#endif
+#endif
 }
 
 void write_motor_outputs() {
-    //
-    //#if (AIRCRAFT_CONFIGURATION==QUADX)
-    //          set_motor_output(0,MOTOR_0_CHANNEL,throttleOutput-pidoutput[ROLL_INDEX]+pidoutput[PITCH_INDEX]-pidoutput[YAW_INDEX]);
-    //          set_motor_output(1,MOTOR_1_CHANNEL,throttleOutput-pidoutput[ROLL_INDEX]-pidoutput[PITCH_INDEX]+pidoutput[YAW_INDEX]);
-    //          set_motor_output(2,MOTOR_2_CHANNEL,throttleOutput+pidoutput[ROLL_INDEX]+pidoutput[PITCH_INDEX]+pidoutput[YAW_INDEX]);
-    //          set_motor_output(3,MOTOR_3_CHANNEL,throttleOutput+pidoutput[ROLL_INDEX]-pidoutput[PITCH_INDEX]-pidoutput[YAW_INDEX]);
-    //#elif (AIRCRAFT_CONFIGURATION==TRI)
-    //#endif
-    //      }
+    // Store the computed numbers and write out to the channel
+    for (int x=0;x<NUM_MOTORS;++x)
+        global.motorOutputValue[x]=global.motor[x];
     
+    set_output(MOTOR_0_CHANNEL,global.motor[0]);
+    set_output(MOTOR_1_CHANNEL,global.motor[1]);
+    set_output(MOTOR_2_CHANNEL,global.motor[2]);
+#if (NUM_MOTORS>3)
+    set_output(MOTOR_3_CHANNEL,global.motor[3]);
+#endif
+#if (NUM_MOTORS>4)
+    set_output(MOTOR_4_CHANNEL,global.motor[4]);
+    set_output(MOTOR_5_CHANNEL,global.motor[5]);
+#endif
+#if (NUM_MOTORS>6)
+    set_output(MOTOR_6_CHANNEL,global.motor[6]);
+    set_output(MOTOR_7_CHANNEL,global.motor[7]);
+#endif
 }

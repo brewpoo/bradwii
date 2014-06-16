@@ -396,7 +396,7 @@ int main(void) {
 
        lib_fp_constrain(&throttleOutput,0,FIXEDPOINTONE); // Keep throttle output between 0 and 1
 
-       compute_mix(); // aircraft type dependant mixes
+       compute_mix(throttleOutput, pidoutput); // aircraft type dependent mixes
        
 #if (NUM_SERVOS>0)
        // do not update servos during unarmed calibration of sensors which are sensitive to vibration
@@ -464,4 +464,15 @@ void default_user_settings() {
         usersettings.gyrocalibration[x]=0;
         usersettings.acccalibration[x]=0;
     }
+    
+#if NUM_SERVOS>0
+    for (int x=0;x<NUM_SERVOS;x++) {
+        usersettings.servo[x].min=1020;
+        usersettings.servo[x].max=2000;
+        usersettings.servo[x].middle=1500;
+        usersettings.servo[x].rate=100;
+        usersettings.servo[x].direction=1;
+    }
+#endif
+    
 }

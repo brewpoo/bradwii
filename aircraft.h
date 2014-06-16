@@ -17,6 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "options.h"
 #include "config.h"
+#include "lib_fp.h"
 
 // set aircraft type dependant defines here
 #if (AIRCRAFT_CONFIGURATION == OCTOX8) | (AIRCRAFT_CONFIGURATION==OCTOFLATP) | (AIRCRAFT_CONFIGURATION==OCTOFLATX)
@@ -29,8 +30,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   #define NUM_MOTORS 4
   #define NUM_SERVOS 0
 #elif (AIRCRAFT_CONFIGURATION==TRI)
-  #define NUM_MOTORS 3
-  #define NUM_SERVOS 1
+    #define NUM_MOTORS 3
+    #define NUM_SERVOS 1
+    #define TRI_REAR_MOTOR 0
+    #define TRI_LEFT_MOTOR 1
+    #define TRI_RIGHT_MOTOR 2
+    #define TRI_REAR_SERVO 0
 #elif (AIRCRAFT_CONFIGURATION==BI)
   #define NUM_MOTORS 2
   #define NUM_SERVOS 2
@@ -38,4 +43,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   #error "Need to define an aircraft type"
 #endif
 
-void compute_mix();
+void compute_mix(fixedpointnum throttle, fixedpointnum pid[]);
