@@ -215,7 +215,7 @@
 			buildPhases = (
 			);
 			buildToolPath = make;
-			buildWorkingDirectory = "project files";
+			buildWorkingDirectory = /Users/jlochner/Devel/bradwii;
 			dependencies = (
 			);
 			name = "compile and flash 2560";
@@ -320,7 +320,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				DEVICE = atmega2560;
-				PATH = "$(PATH):$(PROJECT_DIR)/../Avr_Tools/bin";
+				PATH = "$(PATH):$(PROJECT_DIR)/../Avr_Tools/bin:$(PROJECT_DIR)'/../Avr Libraries':$(PROJECT_DIR):/Applications/Copter/Arduino.app/Contents/Resources/Java/hardware/tools/avr/bin/";
 				PROGRAMMER = "-c wiring -P/dev/cu.SLAB_USBtoUART -b115200 -D";
 			};
 			name = Release;

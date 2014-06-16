@@ -381,7 +381,7 @@ void serial_check_port_for_action(unsigned char portnumber) {
     }
 }
 
-//#define SERIALTEXTDEBUG
+#define SERIALTEXTDEBUG
 #ifdef SERIALTEXTDEBUG
 void serial_print_number(char portnumber,long num,int digits,int decimals,char usebuffer) {
     // prints a int number, right justified, using digits # of digits, puting a
