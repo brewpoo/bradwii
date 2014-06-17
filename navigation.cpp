@@ -84,8 +84,8 @@ fixedpointnum navigationDesiredEulerAttitude[3];
 //  crosstrack distance=current distance to destination * sine(A)
 //  ontrack distance = current distance to destination *cosine(A)
 void navigation_set_home_to_current_location() {
-    global.home.latitude=global.gps.currentLatitude;
-    global.home.longitude=global.gps.currentLongitude;
+    global.home.location.latitude=global.gps.currentLatitude;
+    global.home.location.longitude=global.gps.currentLongitude;
 }
    
 void navigation_set_destination(fixedpointnum latitude, fixedpointnum longitude) {

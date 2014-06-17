@@ -29,6 +29,7 @@ extern settingsstruct settings;
 // keep a flag that tells us whether uncrashability is doing gps navigation or not
 static unsigned char doingUncrashableNavigationFlag;
 #endif
+
 // we need a place to remember what the altitude was when uncrashability mode was turned on
 static fixedpointnum uncrashabilityMinimumAltitude;
 static fixedpointnum uncrasabilityDesiredAltitude;
@@ -79,11 +80,11 @@ void uncrashable(unsigned char gotNewGpsReading, fixedpointnum *angleError, fixe
                     // Next, check to see if our GPS says we are out of bounds
                     // are we out of bounds?
                     fixedpointnum bearingFromHome;
-        fixedpointnum distanceFromHome=navigation_get_distance_and_bearing(global.gps.currentLatitude,global.gps.currentLongitude,global.home.latitude,global.home.longitude,&bearingFromHome);
+        fixedpointnum distanceFromHome=navigation_get_distance_and_bearing(global.gps.currentLatitude,global.gps.currentLongitude,global.home.location.latitude,global.home.location.longitude,&bearingFromHome);
         
         if (distanceFromHome>FPUNCRASHABLE_RADIUS) { // we are outside the allowable area, navigate back toward home
             if (!doingUncrashableNavigationFlag) { // we just started navigating, so we have to set the destination
-                navigation_set_destination(global.home.latitude,global.home.longitude);
+                navigation_set_destination(global.home.location.latitude,global.home.location.longitude);
                 doingUncrashableNavigationFlag=1;
             }
             

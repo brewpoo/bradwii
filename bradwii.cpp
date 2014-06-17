@@ -161,7 +161,7 @@ int main(void) {
                  navigation_set_home_to_current_location();
                 #endif
                  global.home.heading=global.currentEstimatedEulerAttitude[YAW_INDEX];
-                 global.home.altitude=global.baroRawAltitude;
+                 global.home.location.altitude=global.baroRawAltitude;
              }
           } else if (!(global.activeCheckboxItems & CHECKBOX_MASK_ARM)) global.state.armed=0;
       }
@@ -170,7 +170,7 @@ int main(void) {
       // turn on or off navigation when appropriate
       if (global.state.navigationMode==NAVIGATION_MODE_OFF) {
           if (global.activeCheckboxItems & CHECKBOX_MASK_RETURNTOHOME) { // return to home switch turned on
-              navigation_set_destination(global.home.latitude,global.home.longitude);
+              navigation_set_destination(global.home.location.latitude,global.home.location.longitude);
               global.state.navigationMode=NAVIGATION_MODE_RETURN_TO_HOME;
           } else if (global.activeCheckboxItems & CHECKBOX_MASK_POSITIONHOLD) { // position hold turned on
               navigation_set_destination(global.gps.currentLatitude,global.gps.currentLongitude);
@@ -228,7 +228,7 @@ int main(void) {
        // let autotune adjust the angle error if the pilot has autotune turned on
        if (global.activeCheckboxItems & CHECKBOX_MASK_AUTOTUNE) {
            if (!(global.previousActiveCheckboxItems & CHECKBOX_MASK_AUTOTUNE)) {
-               autotune(angleError,AUTOTUNESTARTING); // tell autotune that we just started autotuning
+               autotune(angleError,AUTOTUNESTARTING); // tell autotune that altitudeHoldwe just started autotuning
            } else {
                autotune(angleError,AUTOTUNETUNING); // tell autotune that we are in the middle of autotuning
            }
@@ -243,7 +243,7 @@ int main(void) {
 
        // keep a flag to indicate whether we shoud apply altitude hold.  The pilot can turn it on or
        // uncrashability mode can turn it on.
-       global.home.altitude=0;
+       global.state.altitudeHold=0;
       
        if (global.activeCheckboxItems & CHECKBOX_MASK_ALTHOLD) {
            global.state.altitudeHold=1;
@@ -388,8 +388,8 @@ void default_user_settings() {
     for (int x=0;x<3;++x) {
         settings.compassZeroOffset[x]=0;
         settings.compassCalibrationMultiplier[x]=1L<<FIXEDPOINTSHIFT;
-        settings.gyrocalibration[x]=0;
-        settings.acccalibration[x]=0;
+        settings.gyroCalibration[x]=0;
+        settings.accCalibration[x]=0;
     }
     
 #if NUM_SERVOS>0

@@ -55,31 +55,28 @@ typedef struct {
 
 typedef struct {
     unsigned char armed;                    // A flag indicating that the aircraft is armed
-    unsigned char altitudeHold;             // Altitude hold is engaged
+    unsigned char stable;                   // Set to 1 when our gravity vector is close to unit length
+    unsigned char altitudeHold;             // Altitude hold is engaged (how is this different from a navigation mode)
     unsigned char calibratingCompass;       // Flag indicating compass calibration is running
     unsigned char calibratingAccAndGyro;    // Flag indicating acc/gyro calibration is runnig
     unsigned char navigationMode;           // See navigation.h
-    unsigned char stable;                   // Set to 1 when our gravity vector is close to unit length
 } stateStruct;
-
-typedef struct {
-    fixedpointnum heading;                  // the heading we were pointing when arming was established
-    fixedpointnum altitude;                 // The altitude when arming established
-    fixedpointnum latitude;                 // The latitude when the aircraft was armed
-    fixedpointnum longitude;                // The longitude when the aircraft was armed
-} homeStruct;
 
 typedef struct {
     fixedpointnum altitude;
     fixedpointnum latitude;
     fixedpointnum longitude;
-    
 } locationStruct;
+
+typedef struct {
+    fixedpointnum heading;          // the heading we were pointing when arming was established
+    locationStruct location;        // the location we were in when armed
+} homeStruct;
 
 typedef struct {
     locationStruct location;        // 3D location of waypoint
     unsigned char waypointType;     // Type of waypoint: fly-over, hold
-    fixedpointnum targetVelocity;   // Velocity of fly-over (units?
+    fixedpointnum targetVelocity;   // Velocity of fly-over (units?)
     fixedpointnum holdDuration;     // Length of time to hold position (seconds)
 } waypointStruct;
 
@@ -127,15 +124,19 @@ typedef struct {
 // We can add to the structure, but we shouldn't re-arrange the items to insure backward compatibility.
 typedef struct {
     fixedpointnum maxYawRate;                               // maximum yaw rate (by pilot input) in degrees/sec
+    fixedpointnum maxPitchAndRollRate;                      // maximum pitch and roll rate (by pilot input) in degrees/sec
+
     fixedpointnum pid_pgain[NUM_PID_ITEMS];                 // The various PID p gains
     fixedpointnum pid_igain[NUM_PID_ITEMS];                 // The various PID i gains
     fixedpointnum pid_dgain[NUM_PID_ITEMS];                 // The various PID d gains
+    
     unsigned int checkboxConfiguration[NUM_POSSIBLE_CHECKBOXES]; // Bits that describe how the checkboxes are configured
-    fixedpointnum gyrocalibration[3];                       // Offsets used to calibrate the gyro
-    fixedpointnum acccalibration[3];                        // Offsets used to calibrate the accelerometer
+    
+    fixedpointnum gyroCalibration[3];                       // Offsets used to calibrate the gyro
+    fixedpointnum accCalibration[3]; // Offsets used to calibrate the accelerometer
+    
     fixedpointnum compassCalibrationMultiplier[3];          // Multipliers used to calibrate the compass
     int compassZeroOffset[3];                               // Offsets used to calibrate the compass
-    fixedpointnum maxPitchAndRollRate;                      // maximum pitch and roll rate (by pilot input) in degrees/sec
     servoStruct servo[NUM_SERVOS];                          // Servo settings
     waypointStruct waypoints[NUM_WAYPOINTS];                // Waypoint storage
 } settingsstruct;

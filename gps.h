@@ -21,5 +21,3 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 void init_gps();
 char read_gps();
-
-fixedpointnum gpsgetdistanceandbearing(fixedpointnum lat1,fixedpointnum lon1,fixedpointnum lat2,fixedpointnum lon2,fixedpointnum *bearing);

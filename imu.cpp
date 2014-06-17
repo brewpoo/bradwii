@@ -72,8 +72,8 @@ fixedpointnum lastBaroRawAltitude; // remember our last reading so we can calcul
 void calibrate_gyro_and_accelerometer() {
     global.state.calibratingAccAndGyro = 1;
     for (int x=0;x<3;++x) {
-        settings.gyrocalibration[x]=0;
-        settings.acccalibration[x]=0;
+        settings.gyroCalibration[x]=0;
+        settings.accCalibration[x]=0;
     }
 
     fixedpointnum totaltime=0;
@@ -89,8 +89,8 @@ void calibrate_gyro_and_accelerometer() {
        totaltime+=global.timesliver;
       
        for (int x=0;x<3;++x) {
-           lib_fp_lowpassfilter(&settings.gyrocalibration[x],-global.gyrorate[x],global.timesliver,FIXEDPOINTONEOVERONE,TIMESLIVEREXTRASHIFT);
-           lib_fp_lowpassfilter(&settings.acccalibration[x],-global.correctedVectorGs[x],global.timesliver,FIXEDPOINTONEOVERONE,TIMESLIVEREXTRASHIFT);
+           lib_fp_lowpassfilter(&settings.gyroCalibration[x],-global.gyrorate[x],global.timesliver,FIXEDPOINTONEOVERONE,TIMESLIVEREXTRASHIFT);
+           lib_fp_lowpassfilter(&settings.accCalibration[x],-global.correctedVectorGs[x],global.timesliver,FIXEDPOINTONEOVERONE,TIMESLIVEREXTRASHIFT);
        }
    }
     global.state.calibratingAccAndGyro = 0;
@@ -123,8 +123,8 @@ void imu_calculate_estimated_attitude() {
 
     // correct the gyro and acc readings to remove error
     for (int x=0;x<3;++x) {
-        global.gyrorate[x]=global.gyrorate[x]+settings.gyrocalibration[x];
-        global.correctedVectorGs[x]=global.correctedVectorGs[x]+settings.acccalibration[x];
+        global.gyrorate[x]=global.gyrorate[x]+settings.gyroCalibration[x];
+        global.correctedVectorGs[x]=global.correctedVectorGs[x]+settings.accCalibration[x];
     }
 
     // calculate how many degrees we have rotated around each axis.  Keep in mind that timesliver is
@@ -142,7 +142,7 @@ void imu_calculate_estimated_attitude() {
     rotate_vector_with_small_angles(global.estimatedDownVector,rolldeltaangle,pitchdeltaangle,yawdeltaangle);
     rotate_vector_with_small_angles(global.estimatedWestVector,rolldeltaangle,pitchdeltaangle,yawdeltaangle);
 
-    // if the accellerometer's gravity vector is close to one G, use a complimentary filter
+    // if the accelerometer's gravity vector is close to one G, use a complimentary filter
     // to gently adjust our estimated g vector so that it stays in line with the real one.
     // If the magnitude of the vector is not near one G, then it will be difficult to determine
     // which way is down, so we just skip it.
@@ -178,7 +178,7 @@ void imu_calculate_estimated_attitude() {
 #else
     if (compassTimeInterval>(6553L<<TIMESLIVEREXTRASHIFT)) {
         // 10 hz
-        // we aren't using the comopass
+        // we aren't using the compass
         // we need to make sure the west vector stays around unit length and stays perpendicular to the down vector
         // first make it perpendicular by crossing it with the down vector and then back again
         fixedpointnum vector[3];
