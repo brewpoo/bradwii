@@ -44,7 +44,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "autotune.h"
 
 extern globalstruct global;
-extern usersettingsstruct usersettings;
+extern settingsstruct settings;
 
 #ifndef NO_AUTOTUNE
 
@@ -73,28 +73,28 @@ void autotune(fixedpointnum *angleError,unsigned char startingOrStopping) {
     }
       
     if (startingOrStopping==AUTOTUNESTOPPING) {
-        usersettings.pid_igain[autotuneIndex]=currentIValueShifted>>AUTOTUNESHIFT;
+        settings.pid_igain[autotuneIndex]=currentIValueShifted>>AUTOTUNESHIFT;
       
         // multiply by D multiplier.  The best D is usually a little higher than what the algroithm produces.
-        usersettings.pid_dgain[autotuneIndex]=lib_fp_multiply(currentDValueShifted,FPAUTOTUNE_D_MULTIPLIER)>>AUTOTUNESHIFT;
+        settings.pid_dgain[autotuneIndex]=lib_fp_multiply(currentDValueShifted,FPAUTOTUNE_D_MULTIPLIER)>>AUTOTUNESHIFT;
       
-        usersettings.pid_igain[YAW_INDEX]=usersettings.pid_igain[ROLL_INDEX];
-        usersettings.pid_dgain[YAW_INDEX]=usersettings.pid_dgain[ROLL_INDEX];
-        usersettings.pid_pgain[YAW_INDEX]=lib_fp_multiply(usersettings.pid_pgain[ROLL_INDEX],YAWGAINMULTIPLIER);
+        settings.pid_igain[YAW_INDEX]=settings.pid_igain[ROLL_INDEX];
+        settings.pid_dgain[YAW_INDEX]=settings.pid_dgain[ROLL_INDEX];
+        settings.pid_pgain[YAW_INDEX]=lib_fp_multiply(settings.pid_pgain[ROLL_INDEX],YAWGAINMULTIPLIER);
 
         autotuneIndex=!autotuneIndex; // alternate between roll and pitch
         return;
     }
 
     if (startingOrStopping==AUTOTUNESTARTING) {
-        currentPValueShifted=usersettings.pid_pgain[autotuneIndex]<<AUTOTUNESHIFT;
-        currentIValueShifted=usersettings.pid_igain[autotuneIndex]<<AUTOTUNESHIFT;
+        currentPValueShifted=settings.pid_pgain[autotuneIndex]<<AUTOTUNESHIFT;
+        currentIValueShifted=settings.pid_igain[autotuneIndex]<<AUTOTUNESHIFT;
         
         // divide by D multiplier to get our working value.  We'll multiply by D multiplier when we are done.
-        usersettings.pid_dgain[autotuneIndex]=lib_fp_multiply(usersettings.pid_dgain[autotuneIndex],FPONEOVERAUTOTUNE_D_MULTIPLIER);
-        currentDValueShifted=usersettings.pid_dgain[autotuneIndex]<<AUTOTUNESHIFT;
+        settings.pid_dgain[autotuneIndex]=lib_fp_multiply(settings.pid_dgain[autotuneIndex],FPONEOVERAUTOTUNE_D_MULTIPLIER);
+        currentDValueShifted=settings.pid_dgain[autotuneIndex]<<AUTOTUNESHIFT;
       
-        usersettings.pid_igain[autotuneIndex]=0;
+        settings.pid_igain[autotuneIndex]=0;
         cyclecount=1;
         autotunePeak1=autotunePeak2=0;
         rising=0;
@@ -133,7 +133,7 @@ void autotune(fixedpointnum *angleError,unsigned char startingOrStopping) {
                     // go back to checking P and D
                     cyclecount=1;
                     rising=!rising;
-                    usersettings.pid_igain[autotuneIndex]=0;
+                    settings.pid_igain[autotuneIndex]=0;
                     autotunePeak1=autotunePeak2=0;
                 } else {
                     // we are checking P and D values
@@ -171,8 +171,8 @@ void autotune(fixedpointnum *angleError,unsigned char startingOrStopping) {
                     }
                 }
                
-                usersettings.pid_pgain[autotuneIndex]=currentPValueShifted>>AUTOTUNESHIFT;
-                usersettings.pid_dgain[autotuneIndex]=currentDValueShifted>>AUTOTUNESHIFT;
+                settings.pid_pgain[autotuneIndex]=currentPValueShifted>>AUTOTUNESHIFT;
+                settings.pid_dgain[autotuneIndex]=currentDValueShifted>>AUTOTUNESHIFT;
             
                 // switch to the other direction and start a new cycle
                 rising=!rising;
@@ -182,7 +182,7 @@ void autotune(fixedpointnum *angleError,unsigned char startingOrStopping) {
                     // switch to testing I value
                     cyclecount=0;
             
-                    usersettings.pid_igain[autotuneIndex]=currentIValueShifted>>AUTOTUNESHIFT;
+                    settings.pid_igain[autotuneIndex]=currentIValueShifted>>AUTOTUNESHIFT;
                 }
             }
         }

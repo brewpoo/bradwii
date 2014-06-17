@@ -40,7 +40,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 extern globalstruct global;
-extern usersettingsstruct usersettings;
+extern settingsstruct settings;
 
 extern const char checkboxnames[];
 extern unsigned int lib_i2c_error_count;
@@ -209,18 +209,18 @@ void evaluate_command(unsigned char portnumber,unsigned char *data) {
       for (int x=0;x<NUM_PID_ITEMS;++x)
          {
          if (x==ALTITUDE_INDEX)
-            send_and_checksum_character(portnumber,usersettings.pid_pgain[x]>>7);
+            send_and_checksum_character(portnumber,settings.pid_pgain[x]>>7);
          else if (x==NAVIGATION_INDEX)
-            send_and_checksum_character(portnumber,usersettings.pid_pgain[x]>>11);
+            send_and_checksum_character(portnumber,settings.pid_pgain[x]>>11);
          else
-            send_and_checksum_character(portnumber,usersettings.pid_pgain[x]>>3);
-         send_and_checksum_character(portnumber,usersettings.pid_igain[x]);
+            send_and_checksum_character(portnumber,settings.pid_pgain[x]>>3);
+         send_and_checksum_character(portnumber,settings.pid_igain[x]);
          if (x==NAVIGATION_INDEX)
-            send_and_checksum_character(portnumber,usersettings.pid_dgain[x]>>8);
+            send_and_checksum_character(portnumber,settings.pid_dgain[x]>>8);
          else if (x==ALTITUDE_INDEX)
-            send_and_checksum_character(portnumber,usersettings.pid_dgain[x]>>9);
+            send_and_checksum_character(portnumber,settings.pid_dgain[x]>>9);
          else
-            send_and_checksum_character(portnumber,usersettings.pid_dgain[x]>>2);
+            send_and_checksum_character(portnumber,settings.pid_dgain[x]>>2);
          }
       }
    else if (command==MSP_SET_PID)
@@ -228,24 +228,24 @@ void evaluate_command(unsigned char portnumber,unsigned char *data) {
       for (int x=0;x<NUM_PID_ITEMS;++x)
          {
          if (x==ALTITUDE_INDEX)
-            usersettings.pid_pgain[x]=((fixedpointnum)(*data++))<<7;
+            settings.pid_pgain[x]=((fixedpointnum)(*data++))<<7;
          else if (x==NAVIGATION_INDEX)
-            usersettings.pid_pgain[x]=((fixedpointnum)(*data++))<<11;
+            settings.pid_pgain[x]=((fixedpointnum)(*data++))<<11;
          else
-            usersettings.pid_pgain[x]=((fixedpointnum)(*data++))<<3;
-         usersettings.pid_igain[x]=((fixedpointnum)(*data++));
+            settings.pid_pgain[x]=((fixedpointnum)(*data++))<<3;
+         settings.pid_igain[x]=((fixedpointnum)(*data++));
          if (x==NAVIGATION_INDEX)
-            usersettings.pid_dgain[x]=((fixedpointnum)(*data++))<<8;
+            settings.pid_dgain[x]=((fixedpointnum)(*data++))<<8;
          else if (x==ALTITUDE_INDEX)
-            usersettings.pid_dgain[x]=((fixedpointnum)(*data++))<<9;
+            settings.pid_dgain[x]=((fixedpointnum)(*data++))<<9;
          else
-            usersettings.pid_dgain[x]=((fixedpointnum)(*data++))<<2;
+            settings.pid_dgain[x]=((fixedpointnum)(*data++))<<2;
 
          }
 // while testing, make roll pid equal to pitch pid so I only have to change one thing.
-//usersettings.pid_pgain[ROLL_INDEX]=usersettings.pid_pgain[PITCH_INDEX];
-//usersettings.pid_igain[ROLL_INDEX]=usersettings.pid_igain[PITCH_INDEX];
-//usersettings.pid_dgain[ROLL_INDEX]=usersettings.pid_dgain[PITCH_INDEX];
+//settings.pid_pgain[ROLL_INDEX]=settings.pid_pgain[PITCH_INDEX];
+//settings.pid_igain[ROLL_INDEX]=settings.pid_igain[PITCH_INDEX];
+//settings.pid_dgain[ROLL_INDEX]=settings.pid_dgain[PITCH_INDEX];
       send_good_header(portnumber,0);
       }
    else if (command==MSP_DEBUG)
@@ -265,7 +265,7 @@ void evaluate_command(unsigned char portnumber,unsigned char *data) {
       }
    else if (command==MSP_SET_BOX)
       { // receive check box settings
-      unsigned char *ptr=(unsigned char *)usersettings.checkboxConfiguration;
+      unsigned char *ptr=(unsigned char *)settings.checkboxConfiguration;
       for (int x=0;x<NUM_CHECKBOXES*2;++x)
          {
          *ptr++=*data++;
@@ -274,7 +274,7 @@ void evaluate_command(unsigned char portnumber,unsigned char *data) {
    else if (command==MSP_BOX)
       { // send check box settings
       send_good_header(portnumber,NUM_CHECKBOXES*2);
-      send_and_checksum_data(portnumber,(unsigned char *)usersettings.checkboxConfiguration,NUM_CHECKBOXES*2);
+      send_and_checksum_data(portnumber,(unsigned char *)settings.checkboxConfiguration,NUM_CHECKBOXES*2);
       }
    else if (command==MSP_RESET_CONF)
       { // reset user settings
@@ -308,8 +308,8 @@ void evaluate_command(unsigned char portnumber,unsigned char *data) {
       send_good_header(portnumber,7);
       send_and_checksum_character(portnumber,0); // rcRate
       send_and_checksum_character(portnumber,0); // rcExpo
-      send_and_checksum_character(portnumber,usersettings.maxPitchAndRollRate>>(FIXEDPOINTSHIFT+3)); // rollPitchRate
-      send_and_checksum_character(portnumber,usersettings.maxYawRate>>(FIXEDPOINTSHIFT+2)); // yawRate
+      send_and_checksum_character(portnumber,settings.maxPitchAndRollRate>>(FIXEDPOINTSHIFT+3)); // rollPitchRate
+      send_and_checksum_character(portnumber,settings.maxYawRate>>(FIXEDPOINTSHIFT+2)); // yawRate
       send_and_checksum_character(portnumber,0); // dynThrPID
       send_and_checksum_character(portnumber,0); // thrMid8
       send_and_checksum_character(portnumber,0); // thrExpo8
@@ -318,8 +318,8 @@ void evaluate_command(unsigned char portnumber,unsigned char *data) {
       { // user settings
       data++; //rcRate
       data++; //rcExpo
-      usersettings.maxPitchAndRollRate=((fixedpointnum)(*data++))<<(FIXEDPOINTSHIFT+3); // rollPitchRate
-      usersettings.maxYawRate=((fixedpointnum)(*data++))<<(FIXEDPOINTSHIFT+2); // yawRate
+      settings.maxPitchAndRollRate=((fixedpointnum)(*data++))<<(FIXEDPOINTSHIFT+3); // rollPitchRate
+      settings.maxYawRate=((fixedpointnum)(*data++))<<(FIXEDPOINTSHIFT+2); // yawRate
       data++; // dynThrPID
       data++; // thrMid8
       data++; // thrExpo8
@@ -461,9 +461,9 @@ void serial_check_port_for_actiontest(char portnumber) {
              serial_print_fixedpoint(portnumber,global.altitude);
          } else if (c=='p') {
              // atttude angle values
-             serial_print_fixedpoint(portnumber,usersettings.pid_pgain[0]);
-             serial_print_fixedpoint(portnumber,usersettings.pid_igain[0]);
-             serial_print_fixedpoint(portnumber,usersettings.pid_dgain[0]);
+             serial_print_fixedpoint(portnumber,settings.pid_pgain[0]);
+             serial_print_fixedpoint(portnumber,settings.pid_igain[0]);
+             serial_print_fixedpoint(portnumber,settings.pid_dgain[0]);
          }
         lib_serial_sendstring(portnumber,"\n\r");
     }

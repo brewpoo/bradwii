@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "rx.h"
 
 extern globalstruct global;
-extern usersettingsstruct usersettings;
+extern settingsstruct settings;
 
 char checkboxnames[]/* PROGMEM */= // names for dynamic generation of config GUI
    // this could be moved to program memory if we wanted to save a few bytes of space.
@@ -79,7 +79,7 @@ void check_checkbox_items() {
 #endif
 
     for (int x=0;x<NUM_CHECKBOXES;++x) {
-        if (usersettings.checkboxConfiguration[x] & mask) global.activeCheckboxItems |= (1L<<x);
+        if (settings.checkboxConfiguration[x] & mask) global.activeCheckboxItems |= (1L<<x);
     }
 
 #if (defined(STICK_ARM) | defined (STICK_DISARM))

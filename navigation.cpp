@@ -30,7 +30,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define MAX_YAW_ANGLE_ERROR FIXEDPOINTCONSTANT(5.0)
 
 extern globalstruct global;
-extern usersettingsstruct usersettings;
+extern settingsstruct settings;
 
 fixedpointnum navigation_get_distance_and_bearing(fixedpointnum lat1,fixedpointnum lon1,fixedpointnum lat2,fixedpointnum lon2,fixedpointnum *bearing) {
     // returns fixedpointnum distance in meters and bearing in fixedpointnum degrees from point 1 to point 2
@@ -153,13 +153,13 @@ void navigation_set_angle_error(unsigned char gotNewGpsReading, fixedpointnum *a
         navigationLastOntrackDistance=ontrackDistance;
    
         // calculate the desired tilt in each direction independently using navigation PID
-        fixedpointnum crosstracktiltangle=lib_fp_multiply(usersettings.pid_pgain[NAVIGATION_INDEX],crosstrackDistance)
-                                    +lib_fp_multiply(usersettings.pid_igain[NAVIGATION_INDEX],navigationCrosstrackIntegratedError)
-                                    -lib_fp_multiply(usersettings.pid_dgain[NAVIGATION_INDEX],navigationCrosstrackVelocity);
+        fixedpointnum crosstracktiltangle=lib_fp_multiply(settings.pid_pgain[NAVIGATION_INDEX],crosstrackDistance)
+                                    +lib_fp_multiply(settings.pid_igain[NAVIGATION_INDEX],navigationCrosstrackIntegratedError)
+                                    -lib_fp_multiply(settings.pid_dgain[NAVIGATION_INDEX],navigationCrosstrackVelocity);
                      
-        fixedpointnum ontracktiltangle   =lib_fp_multiply(usersettings.pid_pgain[NAVIGATION_INDEX],ontrackDistance)
-                                    +lib_fp_multiply(usersettings.pid_igain[NAVIGATION_INDEX],navigationOntrackIntegratedError)
-                                    -lib_fp_multiply(usersettings.pid_dgain[NAVIGATION_INDEX],navigationOntrackVelocity);
+        fixedpointnum ontracktiltangle   =lib_fp_multiply(settings.pid_pgain[NAVIGATION_INDEX],ontrackDistance)
+                                    +lib_fp_multiply(settings.pid_igain[NAVIGATION_INDEX],navigationOntrackIntegratedError)
+                                    -lib_fp_multiply(settings.pid_dgain[NAVIGATION_INDEX],navigationOntrackVelocity);
       
         // don't tilt more than MAX_TILT
         lib_fp_constrain(&crosstracktiltangle,-MAX_TILT,MAX_TILT);

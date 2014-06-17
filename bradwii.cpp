@@ -92,7 +92,7 @@ m
 #include "autotune.h"
 
 globalstruct global; // global variables
-usersettingsstruct usersettings; // user editable variables
+settingsstruct settings; // user editable variables
 
 // limit pid windup
 #define INTEGRATED_ANGLE_ERROR_LIMIT FIXEDPOINTCONSTANT(5000) 
@@ -105,7 +105,7 @@ unsigned long timeslivertimer=0;
 int main(void) {
     // start with default user settings in case there's nothing in eeprom
     default_user_settings();
-    // try to load usersettings from eeprom
+    // try to load settings from eeprom
     read_user_settings_from_eeprom();
    
     // set our LED as a digital output
@@ -265,7 +265,7 @@ int main(void) {
            lib_fp_constrain(&global.integratedAltitudeError,-INTEGRATED_ANGLE_ERROR_LIMIT,INTEGRATED_ANGLE_ERROR_LIMIT); // don't let the integrated error get too high
          
            // do pid for the altitude hold and add it to the throttle output
-           throttleOutput+=lib_fp_multiply(global.altitudeHoldDesiredAltitude-global.altitude,usersettings.pid_pgain[ALTITUDE_INDEX])-lib_fp_multiply(global.altitudeVelocity,usersettings.pid_dgain[ALTITUDE_INDEX])+lib_fp_multiply(global.integratedAltitudeError,usersettings.pid_igain[ALTITUDE_INDEX]);
+           throttleOutput+=lib_fp_multiply(global.altitudeHoldDesiredAltitude-global.altitude,settings.pid_pgain[ALTITUDE_INDEX])-lib_fp_multiply(global.altitudeVelocity,settings.pid_dgain[ALTITUDE_INDEX])+lib_fp_multiply(global.integratedAltitudeError,settings.pid_igain[ALTITUDE_INDEX]);
        }
 #endif
        if ((global.activeCheckboxItems & CHECKBOX_MASK_AUTOTHROTTLE) || global.state.altitudeHold) {
@@ -315,7 +315,7 @@ int main(void) {
            lib_fp_constrain(&global.integratedAngleError[x],-INTEGRATED_ANGLE_ERROR_LIMIT,INTEGRATED_ANGLE_ERROR_LIMIT);
          
            // do the attitude pid
-           pidOutput[x]=lib_fp_multiply(angleError[x],usersettings.pid_pgain[x])-lib_fp_multiply(global.gyrorate[x],usersettings.pid_dgain[x])+(lib_fp_multiply(global.integratedAngleError[x],usersettings.pid_igain[x])>>4);
+           pidOutput[x]=lib_fp_multiply(angleError[x],settings.pid_pgain[x])-lib_fp_multiply(global.gyrorate[x],settings.pid_dgain[x])+(lib_fp_multiply(global.integratedAngleError[x],settings.pid_igain[x])>>4);
             
            // add gain scheduling.
            pidOutput[x]=lib_fp_multiply(gainSchedulingMultiplier,pidOutput[x]);
@@ -350,55 +350,55 @@ void default_user_settings() {
     global.userSettingsFromEeprom=0; // this should get set to one if we read from eeprom
    
     // set default acro mode rotation rates
-    usersettings.maxYawRate=200L<<FIXEDPOINTSHIFT; // degrees per second
-    usersettings.maxPitchAndRollRate=400L<<FIXEDPOINTSHIFT; // degrees per second
+    settings.maxYawRate=200L<<FIXEDPOINTSHIFT; // degrees per second
+    settings.maxPitchAndRollRate=400L<<FIXEDPOINTSHIFT; // degrees per second
 
     // set default PID settings
     for (int x=0;x<3;++x) {
-        usersettings.pid_pgain[x]=15L<<3; // 1.5 on configurator
-        usersettings.pid_igain[x]=8L;     // .008 on configurator
-        usersettings.pid_dgain[x]=8L<<2;     // 8 on configurator
+        settings.pid_pgain[x]=15L<<3; // 1.5 on configurator
+        settings.pid_igain[x]=8L;     // .008 on configurator
+        settings.pid_dgain[x]=8L<<2;     // 8 on configurator
     }
 
-    usersettings.pid_pgain[YAW_INDEX]=30L<<3; // 3 on configurator
+    settings.pid_pgain[YAW_INDEX]=30L<<3; // 3 on configurator
    
     for (int x=3;x<NUM_PID_ITEMS;++x) {
-        usersettings.pid_pgain[x]=0;
-        usersettings.pid_igain[x]=0;
-        usersettings.pid_dgain[x]=0;
+        settings.pid_pgain[x]=0;
+        settings.pid_igain[x]=0;
+        settings.pid_dgain[x]=0;
     }
    
-    usersettings.pid_pgain[ALTITUDE_INDEX]=27L<<7; // 2.7 on configurator
-    usersettings.pid_dgain[ALTITUDE_INDEX]=6L<<9;     // 6 on configurator
+    settings.pid_pgain[ALTITUDE_INDEX]=27L<<7; // 2.7 on configurator
+    settings.pid_dgain[ALTITUDE_INDEX]=6L<<9;     // 6 on configurator
 
-    usersettings.pid_pgain[NAVIGATION_INDEX]=25L<<11; // 2.5 on configurator
-    usersettings.pid_dgain[NAVIGATION_INDEX]=188L<<8;     // .188 on configurator
+    settings.pid_pgain[NAVIGATION_INDEX]=25L<<11; // 2.5 on configurator
+    settings.pid_dgain[NAVIGATION_INDEX]=188L<<8;     // .188 on configurator
    
     // set default configuration checkbox settings.
     for (int x=0;x<NUM_POSSIBLE_CHECKBOXES;++x) {
-        usersettings.checkboxConfiguration[x]=0;
+        settings.checkboxConfiguration[x]=0;
     }
 
-    //usersettings.checkboxConfiguration[CHECKBOX_ARM]=CHECKBOX_MASK_AUX1HIGH;
-    usersettings.checkboxConfiguration[CHECKBOX_HIGHANGLE]=CHECKBOX_MASK_AUX1LOW;
-    usersettings.checkboxConfiguration[CHECKBOX_SEMIACRO]=CHECKBOX_MASK_AUX1HIGH;
-    usersettings.checkboxConfiguration[CHECKBOX_HIGHRATES]=CHECKBOX_MASK_AUX1HIGH;
+    //settings.checkboxConfiguration[CHECKBOX_ARM]=CHECKBOX_MASK_AUX1HIGH;
+    settings.checkboxConfiguration[CHECKBOX_HIGHANGLE]=CHECKBOX_MASK_AUX1LOW;
+    settings.checkboxConfiguration[CHECKBOX_SEMIACRO]=CHECKBOX_MASK_AUX1HIGH;
+    settings.checkboxConfiguration[CHECKBOX_HIGHRATES]=CHECKBOX_MASK_AUX1HIGH;
    
     // reset the calibration settings
     for (int x=0;x<3;++x) {
-        usersettings.compassZeroOffset[x]=0;
-        usersettings.compassCalibrationMultiplier[x]=1L<<FIXEDPOINTSHIFT;
-        usersettings.gyrocalibration[x]=0;
-        usersettings.acccalibration[x]=0;
+        settings.compassZeroOffset[x]=0;
+        settings.compassCalibrationMultiplier[x]=1L<<FIXEDPOINTSHIFT;
+        settings.gyrocalibration[x]=0;
+        settings.acccalibration[x]=0;
     }
     
 #if NUM_SERVOS>0
     for (int x=0;x<NUM_SERVOS;x++) {
-        usersettings.servo[x].min=1020;
-        usersettings.servo[x].max=2000;
-        usersettings.servo[x].middle=1500;
-        usersettings.servo[x].rate=100;
-        usersettings.servo[x].direction=1;
+        settings.servo[x].min=1020;
+        settings.servo[x].max=2000;
+        settings.servo[x].middle=1500;
+        settings.servo[x].rate=100;
+        settings.servo[x].direction=1;
     }
 #endif
     

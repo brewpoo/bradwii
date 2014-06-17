@@ -20,10 +20,10 @@
 #include "lib_fp.h"
 
 extern globalstruct global;
-extern usersettingsstruct usersettings;
+extern settingsstruct settings;
 
-#define SERVO_DIR(s) usersettings.servo[s].direction
-#define SERVO_MID(s) usersettings.servo[s].middle
+#define SERVO_DIR(s) settings.servo[s].direction
+#define SERVO_MID(s) settings.servo[s].middle
 
 void compute_mix(fixedpointnum throttle, fixedpointnum pid[]) {
 #if (AIRCRAFT_CONFIGURATION==BI)

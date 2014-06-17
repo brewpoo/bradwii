@@ -138,7 +138,7 @@ typedef struct {
     fixedpointnum maxPitchAndRollRate;                      // maximum pitch and roll rate (by pilot input) in degrees/sec
     servoStruct servo[NUM_SERVOS];                          // Servo settings
     waypointStruct waypoints[NUM_WAYPOINTS];                // Waypoint storage
-} usersettingsstruct;
+} settingsstruct;
 
 void default_user_settings();
 void calculate_timesliver();

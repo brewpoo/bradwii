@@ -23,7 +23,7 @@
 #ifndef NO_UNCRASHABLE
 
 extern globalstruct global;
-extern usersettingsstruct usersettings;
+extern settingsstruct settings;
 
 #if (GPS_TYPE!=NO_GPS)
 // keep a flag that tells us whether uncrashability is doing gps navigation or not

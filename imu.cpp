@@ -30,7 +30,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "compass.h"
 
 extern globalstruct global;
-extern usersettingsstruct usersettings;
+extern settingsstruct settings;
 
 //fixedpointnum estimated_g_vector[3]={0,0,FIXEDPOINTONE}; // start pointing down
 fixedpointnum estimated_compass_vector[3]={FIXEDPOINTONE,0,0}; // start pointing north
@@ -72,8 +72,8 @@ fixedpointnum lastBaroRawAltitude; // remember our last reading so we can calcul
 void calibrate_gyro_and_accelerometer() {
     global.state.calibratingAccAndGyro = 1;
     for (int x=0;x<3;++x) {
-        usersettings.gyrocalibration[x]=0;
-        usersettings.acccalibration[x]=0;
+        settings.gyrocalibration[x]=0;
+        settings.acccalibration[x]=0;
     }
 
     fixedpointnum totaltime=0;
@@ -89,8 +89,8 @@ void calibrate_gyro_and_accelerometer() {
        totaltime+=global.timesliver;
       
        for (int x=0;x<3;++x) {
-           lib_fp_lowpassfilter(&usersettings.gyrocalibration[x],-global.gyrorate[x],global.timesliver,FIXEDPOINTONEOVERONE,TIMESLIVEREXTRASHIFT);
-           lib_fp_lowpassfilter(&usersettings.acccalibration[x],-global.correctedVectorGs[x],global.timesliver,FIXEDPOINTONEOVERONE,TIMESLIVEREXTRASHIFT);
+           lib_fp_lowpassfilter(&settings.gyrocalibration[x],-global.gyrorate[x],global.timesliver,FIXEDPOINTONEOVERONE,TIMESLIVEREXTRASHIFT);
+           lib_fp_lowpassfilter(&settings.acccalibration[x],-global.correctedVectorGs[x],global.timesliver,FIXEDPOINTONEOVERONE,TIMESLIVEREXTRASHIFT);
        }
    }
     global.state.calibratingAccAndGyro = 0;
@@ -123,8 +123,8 @@ void imu_calculate_estimated_attitude() {
 
     // correct the gyro and acc readings to remove error
     for (int x=0;x<3;++x) {
-        global.gyrorate[x]=global.gyrorate[x]+usersettings.gyrocalibration[x];
-        global.correctedVectorGs[x]=global.correctedVectorGs[x]+usersettings.acccalibration[x];
+        global.gyrorate[x]=global.gyrorate[x]+settings.gyrocalibration[x];
+        global.correctedVectorGs[x]=global.correctedVectorGs[x]+settings.acccalibration[x];
     }
 
     // calculate how many degrees we have rotated around each axis.  Keep in mind that timesliver is

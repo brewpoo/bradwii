@@ -19,18 +19,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "eeprom.h"
 #include "bradwii.h"
 
-extern usersettingsstruct usersettings;
+extern settingsstruct settings;
 extern globalstruct global;
 
 #define MAGICNUMBER 12345
 
 void write_user_settings_to_eeprom() {
     int magicnumber=MAGICNUMBER;
-    int size=sizeof(usersettingsstruct);
+    int size=sizeof(settingsstruct);
    
     eeprom_write_block((const void*)&magicnumber, (void*)0, sizeof(magicnumber));
     eeprom_write_block((const void*)&size, (void*)2, sizeof(size));
-    eeprom_write_block((const void*)&usersettings, (void*)4, size);
+    eeprom_write_block((const void*)&settings, (void*)4, size);
 }
    
 void read_user_settings_from_eeprom() {
@@ -41,9 +41,9 @@ void read_user_settings_from_eeprom() {
     if (magicnumber!=MAGICNUMBER) return;
 
     eeprom_read_block((void*)&size, (void*)2, sizeof(size));
-    if (size>sizeof(usersettingsstruct)) size=sizeof(usersettingsstruct);
+    if (size>sizeof(settingsstruct)) size=sizeof(settingsstruct);
    
-    eeprom_read_block((void*)&usersettings, (void*)4, size);
+    eeprom_read_block((void*)&settings, (void*)4, size);
    
     global.userSettingsFromEeprom=1; // set a flag so the rest of the program know it's working with calibtated settings
 }

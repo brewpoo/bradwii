@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "lib_timers.h"
 
 extern globalstruct global;
-extern usersettingsstruct usersettings;
+extern settingsstruct settings;
 
 // convert maximum tilt angles for level mode into fixed point
 #define FP_LEVEL_MODE_MAX_TILT FIXEDPOINTCONSTANT(LEVEL_MODE_MAX_TILT)
@@ -42,9 +42,9 @@ void reset_pilot_control() {
     // keeps us from accumulating yaw error that we can't correct.
     desiredCompassHeading=global.currentEstimatedEulerAttitude[YAW_INDEX];
    
-    // calculate our max rotation rates based on usersettings
-    highyawrate=lib_fp_multiply(usersettings.maxYawRate, FP_HIGH_RATES_MULTIPLIER);
-    highPitchAndRollRate=lib_fp_multiply(usersettings.maxPitchAndRollRate, FP_HIGH_RATES_MULTIPLIER);
+    // calculate our max rotation rates based on settings
+    highyawrate=lib_fp_multiply(settings.maxYawRate, FP_HIGH_RATES_MULTIPLIER);
+    highPitchAndRollRate=lib_fp_multiply(settings.maxPitchAndRollRate, FP_HIGH_RATES_MULTIPLIER);
 }
 
 void get_angle_error_from_pilot_input(fixedpointnum *angleError) {
@@ -89,8 +89,8 @@ void get_angle_error_from_pilot_input(fixedpointnum *angleError) {
         maxYawRate=highyawrate;
         maxPitchAndRollRate=highPitchAndRollRate;
     } else {
-        maxYawRate=usersettings.maxYawRate;
-        maxPitchAndRollRate=usersettings.maxPitchAndRollRate;
+        maxYawRate=settings.maxYawRate;
+        maxPitchAndRollRate=settings.maxPitchAndRollRate;
     }
       
     angleError[ROLL_INDEX]=lib_fp_multiply(lib_fp_multiply(rxRollValue,maxPitchAndRollRate)-global.gyrorate[ROLL_INDEX],global.timesliver);

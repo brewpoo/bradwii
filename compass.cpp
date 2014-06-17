@@ -23,7 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "bradwii.h"
 
 extern globalstruct global;
-extern usersettingsstruct usersettings;
+extern settingsstruct settings;
 
 // note: when adding new compassas, these functions need to be included:
 // void init_compass()  // initializes the compass
@@ -113,7 +113,7 @@ char read_compass() {
         compass_filter_raw_values(compassRawValues);
         // convert the raw values into a unit vector
         for (int x=0;x<3;++x)
-            global.compassVector[x]=lib_fp_multiply(((fixedpointnum)(compassFilteredRawValues[x]-usersettings.compassZeroOffset[x]))<<7,usersettings.compassCalibrationMultiplier[x]);
+            global.compassVector[x]=lib_fp_multiply(((fixedpointnum)(compassFilteredRawValues[x]-settings.compassZeroOffset[x]))<<7,settings.compassCalibrationMultiplier[x]);
         return(1);
     }
     return(0);
@@ -183,8 +183,8 @@ char read_compass() {
 
        // convert the raw values into a unit vector
        for (int axis=0;axis<3;++axis) {
-           a = (compassFilteredRawValues[axis] - usersettings.compassZeroOffset[axis]) << 7;
-           b = usersettings.compassCalibrationMultiplier[axis];
+           a = (compassFilteredRawValues[axis] - settings.compassZeroOffset[axis]) << 7;
+           b = settings.compassCalibrationMultiplier[axis];
 
            global.compassVector[axis] = lib_fp_multiply(a,b);
        }
@@ -254,7 +254,7 @@ char read_compass() {
 
         // convert the raw values into a unit vector
         for (int x=0;x<3;++x)
-            global.compassVector[x]=lib_fp_multiply(((fixedpointnum)(compassFilteredRawValues[x]-usersettings.compassZeroOffset[x]))<<7,usersettings.compassCalibrationMultiplier[x]);
+            global.compassVector[x]=lib_fp_multiply(((fixedpointnum)(compassFilteredRawValues[x]-settings.compassZeroOffset[x]))<<7,settings.compassCalibrationMultiplier[x]);
         return(1);
     }
    return(0);
@@ -290,8 +290,8 @@ void calibrate_compass() {
     }
       
     for (int x=0;x<3;++x) {
-        usersettings.compassZeroOffset[x]=(minvalues[x]+maxvalues[x])/2;
-      usersettings.compassCalibrationMultiplier[x]=(1000L<<FIXEDPOINTSHIFT)/(maxvalues[x]-minvalues[x]);
+        settings.compassZeroOffset[x]=(minvalues[x]+maxvalues[x])/2;
+      settings.compassCalibrationMultiplier[x]=(1000L<<FIXEDPOINTSHIFT)/(maxvalues[x]-minvalues[x]);
     }
 }
    
