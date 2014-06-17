@@ -22,6 +22,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #if (GPS_TYPE!=NO_GPS)
 
+#define NAV_WAYPOINT_FLYOVER    0
+#define NAV_WAYPOINT_PAUSE      1
+
 // convert NAVIGATION_MAX_TILT user setting to a fixedpointnum constant
 #define MAX_TILT FIXEDPOINTCONSTANT(NAVIGATION_MAX_TILT)
 #define MAX_YAW_ANGLE_ERROR FIXEDPOINTCONSTANT(5.0)
@@ -81,8 +84,8 @@ fixedpointnum navigationDesiredEulerAttitude[3];
 //  crosstrack distance=current distance to destination * sine(A)
 //  ontrack distance = current distance to destination *cosine(A)
 void navigation_set_home_to_current_location() {
-    global.gpsHomeLatitude=global.gpsCurrentLatitude;
-    global.gpsHomeLongitude=global.gpsCurrentLongitude;
+    global.home.latitude=global.gps.currentLatitude;
+    global.home.longitude=global.gps.currentLongitude;
 }
    
 void navigation_set_destination(fixedpointnum latitude, fixedpointnum longitude) {
@@ -97,7 +100,7 @@ void navigation_set_destination(fixedpointnum latitude, fixedpointnum longitude)
 
     // remember the bearing from the current location to the waypoint.  We will need this to calculate cross track.
     // If we are already at the waypoint (position hold) any arbitrary angle will work.
-    navigationLastOntrackDistance=navigation_get_distance_and_bearing(global.gpsCurrentLatitude,global.gpsCurrentLongitude,latitude,longitude,&navigationStartToDestBearing);
+    navigationLastOntrackDistance=navigation_get_distance_and_bearing(global.gps.currentLatitude,global.gps.currentLongitude,latitude,longitude,&navigationStartToDestBearing);
     navigationTimeSliver=0;
 
     navigationDesiredEulerAttitude[ROLL_INDEX]=0;
@@ -123,7 +126,7 @@ void navigation_set_angle_error(unsigned char gotNewGpsReading, fixedpointnum *a
         navigationTimeSliver=navigationTimeSliver>>TIMESLIVEREXTRASHIFT;
       
         // get the new distance and bearing from our current location to our target position
-        global.navigationDistance=navigation_get_distance_and_bearing(global.gpsCurrentLatitude,global.gpsCurrentLongitude,targetLatitude,targetLongitude,&global.navigationBearing);
+        global.navigationDistance=navigation_get_distance_and_bearing(global.gps.currentLatitude,global.gps.currentLongitude,targetLatitude,targetLongitude,&global.navigationBearing);
 
         // split the distance into it's ontrack and crosstrack components
         // see the diagram above

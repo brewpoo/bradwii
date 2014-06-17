@@ -70,7 +70,7 @@ fixedpointnum lastBaroRawAltitude; // remember our last reading so we can calcul
 // read the acc and gyro a bunch of times and get an average of how far off they are.
 // assumes the aircraft is sitting level and still.
 void calibrate_gyro_and_accelerometer() {
-    global.calibratingAccAndGyro = 1;
+    global.state.calibratingAccAndGyro = 1;
     for (int x=0;x<3;++x) {
         usersettings.gyrocalibration[x]=0;
         usersettings.acccalibration[x]=0;
@@ -93,7 +93,7 @@ void calibrate_gyro_and_accelerometer() {
            lib_fp_lowpassfilter(&usersettings.acccalibration[x],-global.correctedVectorGs[x],global.timesliver,FIXEDPOINTONEOVERONE,TIMESLIVEREXTRASHIFT);
        }
    }
-    global.calibratingAccAndGyro = 0;
+    global.state.calibratingAccAndGyro = 0;
 }
 
 void init_imu() {
@@ -149,11 +149,11 @@ void imu_calculate_estimated_attitude() {
     fixedpointnum accmagnitudesquared=lib_fp_multiply(global.correctedVectorGs[X_INDEX],global.correctedVectorGs[X_INDEX])+lib_fp_multiply(global.correctedVectorGs[Y_INDEX],global.correctedVectorGs[Y_INDEX])+lib_fp_multiply(global.correctedVectorGs[Z_INDEX],global.correctedVectorGs[Z_INDEX]);
 
     if (accmagnitudesquared>MINACCMAGNITUDESQUARED && accmagnitudesquared<MAXACCMAGNITUDESQUARED) {
-        global.stable=1;
+        global.state.stable=1;
         for (int x=0;x<3;++x) {
             lib_fp_lowpassfilter(&global.estimatedDownVector[x], global.correctedVectorGs[x],global.timesliver, ONE_OVER_ACC_COMPLIMENTARY_FILTER_TIME_PERIOD,TIMESLIVEREXTRASHIFT);
         }
-    } else global.stable=0;
+    } else global.state.stable=0;
 
     compassTimeInterval+=global.timesliver;
 

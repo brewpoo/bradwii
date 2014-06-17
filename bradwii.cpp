@@ -133,10 +133,10 @@ int main(void) {
     lib_i2c_setclockspeed(I2C_400_KHZ);
 
     // initialize state
-    global.armed=0;
-    global.calibratingCompass=0;
-    global.calibratingAccAndGyro=0;
-    global.navigationMode=NAVIGATION_MODE_OFF;
+    global.state.armed=0;
+    global.state.calibratingCompass=0;
+    global.state.calibratingAccAndGyro=0;
+    global.state.navigationMode=NAVIGATION_MODE_OFF;
     global.failsafeTimer=lib_timers_starttimer();
 
     // run loop
@@ -154,32 +154,32 @@ int main(void) {
 
       // arm and disarm via rx aux switches
       if (global.rxValues[THROTTLE_INDEX]<FPSTICKLOW) { // see if we want to change armed modes
-          if (!global.armed) {
+          if (!global.state.armed) {
              if (global.activeCheckboxItems & CHECKBOX_MASK_ARM) {
-                 global.armed=1;
+                 global.state.armed=1;
                 #if (GPS_TYPE!=NO_GPS)
                  navigation_set_home_to_current_location();
                 #endif
-                 global.headingWhenArmed=global.currentEstimatedEulerAttitude[YAW_INDEX];
-                 global.altitudeWhenArmed=global.baroRawAltitude;
+                 global.home.heading=global.currentEstimatedEulerAttitude[YAW_INDEX];
+                 global.home.altitude=global.baroRawAltitude;
              }
-          } else if (!(global.activeCheckboxItems & CHECKBOX_MASK_ARM)) global.armed=0;
+          } else if (!(global.activeCheckboxItems & CHECKBOX_MASK_ARM)) global.state.armed=0;
       }
 
       #if (GPS_TYPE!=NO_GPS)
       // turn on or off navigation when appropriate
-      if (global.navigationMode==NAVIGATION_MODE_OFF) {
+      if (global.state.navigationMode==NAVIGATION_MODE_OFF) {
           if (global.activeCheckboxItems & CHECKBOX_MASK_RETURNTOHOME) { // return to home switch turned on
-              navigation_set_destination(global.gpsHomeLatitude,global.gpsHomeLongitude);
-              global.navigationMode=NAVIGATION_MODE_RETURN_TO_HOME;
+              navigation_set_destination(global.home.latitude,global.home.longitude);
+              global.state.navigationMode=NAVIGATION_MODE_RETURN_TO_HOME;
           } else if (global.activeCheckboxItems & CHECKBOX_MASK_POSITIONHOLD) { // position hold turned on
-              navigation_set_destination(global.gpsCurrentLatitude,global.gpsCurrentLongitude);
-              global.navigationMode=NAVIGATION_MODE_POSITION_HOLD;
+              navigation_set_destination(global.gps.currentLatitude,global.gps.currentLongitude);
+              global.state.navigationMode=NAVIGATION_MODE_POSITION_HOLD;
           }
       } else { // we are currently navigating
           // turn off navigation if desired
-          if ((global.navigationMode==NAVIGATION_MODE_RETURN_TO_HOME && !(global.activeCheckboxItems & CHECKBOX_MASK_RETURNTOHOME)) || (global.navigationMode==NAVIGATION_MODE_POSITION_HOLD && !(global.activeCheckboxItems & CHECKBOX_MASK_POSITIONHOLD))) {
-              global.navigationMode=NAVIGATION_MODE_OFF;
+          if ((global.state.navigationMode==NAVIGATION_MODE_RETURN_TO_HOME && !(global.activeCheckboxItems & CHECKBOX_MASK_RETURNTOHOME)) || (global.state.navigationMode==NAVIGATION_MODE_POSITION_HOLD && !(global.activeCheckboxItems & CHECKBOX_MASK_POSITIONHOLD))) {
+              global.state.navigationMode=NAVIGATION_MODE_OFF;
             
               // we will be turning control back over to the pilot.
               reset_pilot_control();
@@ -192,9 +192,9 @@ int main(void) {
       
        // turn on the LED when we are stable and the gps has 5 satelites or more
       #if (GPS_TYPE==NO_GPS)
-       lib_digitalio_setoutput(LED1_OUTPUT, (global.stable==0)==LED1_ON);
+       lib_digitalio_setoutput(LED1_OUTPUT, (global.state.stable==0)==LED1_ON);
       #else
-       lib_digitalio_setoutput(LED1_OUTPUT, (!(global.stable && global.gpsNumSatelites>=5))==LED1_ON);
+       lib_digitalio_setoutput(LED1_OUTPUT, (!(global.state.stable && global.gps.numSatelites>=5))==LED1_ON);
       #endif
       
        // get the angle error.  Angle error is the difference between our current attitude and our desired attitude.
@@ -209,7 +209,7 @@ int main(void) {
        unsigned char gotNewGpsReading=read_gps();
 
        // if we are navigating, use navigation to determine our desired attitude (tilt angles)
-       if (global.navigationMode!=NAVIGATION_MODE_OFF) { // we are navigating
+       if (global.state.navigationMode!=NAVIGATION_MODE_OFF) { // we are navigating
            navigation_set_angle_error(gotNewGpsReading,angleError);
        }
 #endif
@@ -243,10 +243,10 @@ int main(void) {
 
        // keep a flag to indicate whether we shoud apply altitude hold.  The pilot can turn it on or
        // uncrashability mode can turn it on.
-       global.altitudeHoldActive=0;
+       global.home.altitude=0;
       
        if (global.activeCheckboxItems & CHECKBOX_MASK_ALTHOLD) {
-           global.altitudeHoldActive=1;
+           global.state.altitudeHold=1;
            if (!(global.previousActiveCheckboxItems & CHECKBOX_MASK_ALTHOLD)) {
                // we just turned on alt hold.  Remember our current alt. as our target
                global.altitudeHoldDesiredAltitude=global.altitude;
@@ -260,7 +260,7 @@ int main(void) {
         
 #if (BAROMETER_TYPE!=NO_BAROMETER)
        // check for altitude hold and adjust the throttle output accordingly
-       if (global.altitudeHoldActive) {
+       if (global.state.altitudeHold) {
            global.integratedAltitudeError+=lib_fp_multiply(global.altitudeHoldDesiredAltitude-global.altitude,global.timesliver);
            lib_fp_constrain(&global.integratedAltitudeError,-INTEGRATED_ANGLE_ERROR_LIMIT,INTEGRATED_ANGLE_ERROR_LIMIT); // don't let the integrated error get too high
          
@@ -268,7 +268,7 @@ int main(void) {
            throttleOutput+=lib_fp_multiply(global.altitudeHoldDesiredAltitude-global.altitude,usersettings.pid_pgain[ALTITUDE_INDEX])-lib_fp_multiply(global.altitudeVelocity,usersettings.pid_dgain[ALTITUDE_INDEX])+lib_fp_multiply(global.integratedAltitudeError,usersettings.pid_igain[ALTITUDE_INDEX]);
        }
 #endif
-       if ((global.activeCheckboxItems & CHECKBOX_MASK_AUTOTHROTTLE) || global.altitudeHoldActive) {
+       if ((global.activeCheckboxItems & CHECKBOX_MASK_AUTOTHROTTLE) || global.state.altitudeHold) {
            // Auto Throttle Adjust - Increases the throttle when the aircraft is tilted so that the vertical
            // component of thrust remains constant.
            // The AUTOTHROTTLE_DEAD_AREA adjusts the value at which the throttle starts taking effect.  If this
@@ -327,7 +327,7 @@ int main(void) {
        
 #if (NUM_SERVOS>0)
        // do not update servos during unarmed calibration of sensors which are sensitive to vibration
-       if (global.armed || (!global.calibratingAccAndGyro)) write_servo_outputs();
+       if (global.state.armed || (!global.state.calibratingAccAndGyro)) write_servo_outputs();
 #endif
        
        write_motor_outputs();

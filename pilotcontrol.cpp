@@ -54,7 +54,7 @@ void get_angle_error_from_pilot_input(fixedpointnum *angleError) {
    
     // if in headfree mode, rotate the pilot's stick inputs by the angle that is the difference between where we are currently heading and where we were heading when we armed.
    if (global.activeCheckboxItems & CHECKBOX_MASK_HEADFREE) {
-       fixedpointnum angledifference = global.currentEstimatedEulerAttitude[YAW_INDEX] - global.headingWhenArmed;
+       fixedpointnum angledifference = global.currentEstimatedEulerAttitude[YAW_INDEX] - global.home.heading;
 
        fixedpointnum cosAngleDifference = lib_fp_cosine(angledifference);
        fixedpointnum sinAngleDifference = lib_fp_sine(angledifference);

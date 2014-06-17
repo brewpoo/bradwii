@@ -155,11 +155,11 @@ void evaluate_command(unsigned char portnumber,unsigned char *data) {
         fixedpointnum fp=(global.altitude*25)>>(FIXEDPOINTSHIFT-2);
         send_and_checksum_data(portnumber,(unsigned char *)&fp,4);
     } else if (command==MSP_MAG_CALIBRATION) { // send attitude data
-        if (!global.armed) calibrate_compass();
+        if (!global.state.armed) calibrate_compass();
         send_good_header(portnumber,0);
     } else if (command==MSP_ACC_CALIBRATION) { // send attitude data
-        if (!global.armed) {
-            global.calibratingAccAndGyro=1;
+        if (!global.state.armed) {
+            global.state.calibratingAccAndGyro=1;
             calibrate_gyro_and_accelerometer();
         }
         send_good_header(portnumber,0);
@@ -284,17 +284,17 @@ void evaluate_command(unsigned char portnumber,unsigned char *data) {
    else if (command==MSP_EEPROM_WRITE)
       { // reset user settings
       send_good_header(portnumber,0);
-      if (!global.armed) write_user_settings_to_eeprom();
+      if (!global.state.armed) write_user_settings_to_eeprom();
       }
    else if (command==MSP_RAW_GPS)
       { // reset user settings
       send_good_header(portnumber,14);
       send_and_checksum_character(portnumber,0); // gps fix
-      send_and_checksum_character(portnumber, global.gpsNumSatelites);
-      send_and_checksum_long(portnumber,lib_fp_multiply(global.gpsCurrentLatitude,156250L)); //156250L is 10,000,000L>>LATLONGEXTRASHIFT); 
-      send_and_checksum_long(portnumber,lib_fp_multiply(global.gpsCurrentLongitude,156250L)); 
-      send_and_checksum_int(portnumber,global.gpsCurrentAltitude>>FIXEDPOINTSHIFT); // gps altitude
-      send_and_checksum_int(portnumber,(global.gpsCurrentSpeed*100)>>FIXEDPOINTSHIFT); // gps speed
+      send_and_checksum_character(portnumber, global.gps.numSatelites);
+      send_and_checksum_long(portnumber,lib_fp_multiply(global.gps.currentLatitude,156250L)); //156250L is 10,000,000L>>LATLONGEXTRASHIFT);
+      send_and_checksum_long(portnumber,lib_fp_multiply(global.gps.currentLongitude,156250L));
+      send_and_checksum_int(portnumber,global.gps.currentAltitude>>FIXEDPOINTSHIFT); // gps altitude
+      send_and_checksum_int(portnumber,(global.gps.currentSpeed*100)>>FIXEDPOINTSHIFT); // gps speed
       }
    else if (command==MSP_COMP_GPS)
       { // reset user settings

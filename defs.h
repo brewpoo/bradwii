@@ -313,6 +313,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     #define SERVO_1_CHANNEL D2_PWM
     #define SERVO_1_PIN     D2_PIN
 
+    #define NUM_WAYPOINTS 6
 #elif (MICROCONTROLLER_TYPE==MEGA328P)
    #define THROTTLE_RX_INPUT (DIGITALPORTD | 2)
    #define PCINTERRUPT18PORTANDPIN THROTTLE_RX_INPUT
@@ -453,5 +454,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #ifndef SERVO_MIDPOINT
     #define SERVO_MIDPOINT 1500
+#endif
+
+#ifndef NUM_WAYPOINTS
+    #define NUM_WAYPOINTS 0
 #endif
 

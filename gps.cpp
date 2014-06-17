@@ -24,9 +24,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // when adding GPS's, the following functions must be included:
 // init_gps()  // does any initialization of the gps
-// read_gps()  // sets global.gpsCurrentLatitude in fixedpointnum degrees shifted left by LATLONGEXTRASHIFT
-//                    global.gpsCurrentLongitude in fixedpointnum degrees shifted left by LATLONGEXTRASHIFT
-//                    global.gpsNumSatelites,global.gpsCurrentAltitude in fixedpointnum meters
+// read_gps()  // sets global.gps.currentLatitude in fixedpointnum degrees shifted left by LATLONGEXTRASHIFT
+//                    global.gps.currentLongitude in fixedpointnum degrees shifted left by LATLONGEXTRASHIFT
+//                    global.gps.numSatelites,global.gps.currentAltitude in fixedpointnum meters
 //                      returns 1 if a new fix is acquired, 0 otherwise.
 
 extern globalstruct global;
@@ -46,7 +46,7 @@ char read_gps() {
 
 void init_gps() {
     lib_serial_initport(GPS_SERIAL_PORT,GPS_BAUD);
-    global.gpsNumSatelites=0;
+    global.gps.numSatelites=0;
 }
 
 #define GPSDATASIZE 15
@@ -140,14 +140,14 @@ char read_gps() {
                   } else if (gpsparameternumber == 6) {
                       gpsfix = gpsdata[0]-'0';
                   } else if (gpsparameternumber == 7) {
-                      global.gpsNumSatelites = lib_fp_stringtolong(gpsdata);
+                      global.gps.numSatelites = lib_fp_stringtolong(gpsdata);
                   } else if (gpsparameternumber == 9) {
-                      global.gpsCurrentAltitude = lib_fp_stringtofixedpointnum(gpsdata);
+                      global.gps.currentAltitude = lib_fp_stringtofixedpointnum(gpsdata);
                   }
             } else if (gpsframetype == FRAME_RMC) {
                 if (gpsparameternumber == 7) {
                   // 1 knot = 0.514444444 m / s
-                    global.gpsCurrentSpeed=lib_fp_multiply(lib_fp_stringtofixedpointnum(gpsdata),33715L); // 33715L is .514444444 * 2^16
+                    global.gps.currentSpeed=lib_fp_multiply(lib_fp_stringtofixedpointnum(gpsdata),33715L); // 33715L is .514444444 * 2^16
                 } else if (gpsparameternumber == 8) {
 //                  GPS_ground_course = grab_fields(gpsdata,1); 
                 }                 //ground course deg*10
@@ -165,8 +165,8 @@ char read_gps() {
             if (checksum != gpsfinalchecksum || gpsframetype!=FRAME_GGA || !gpsfix) return(0);
             gpsframetype=0; // so we don't check again
 
-            global.gpsCurrentLatitude=gpslatitudedegrees;
-            global.gpsCurrentLongitude=gpslongitudedegrees;
+            global.gps.currentLatitude=gpslatitudedegrees;
+            global.gps.currentLongitude=gpslongitudedegrees;
             
             return(1); // we got a good frame
         } else if (gpsdataindex<GPSDATASIZE) {
@@ -259,7 +259,7 @@ char read_gps() {
 
     unsigned char gps_status= lib_i2c_readnak();
  
-    global.gpsNumSatelites = (gps_status & 0xf0) >> 4;
+    global.gps.numSatelites = (gps_status & 0xf0) >> 4;
     if (gps_status & I2C_GPS_STATUS_3DFIX) {
         //Check is we have a good 3d fix (numsats>5)
         long longvalue;
@@ -274,7 +274,7 @@ char read_gps() {
         *ptr++ = lib_i2c_readack();
         *ptr = lib_i2c_readack();
 
-        global.gpsCurrentLatitude=lib_fp_multiply(longvalue,27488L); // convert from 10,000,000 m to fixedpointnum
+        global.gps.currentLatitude=lib_fp_multiply(longvalue,27488L); // convert from 10,000,000 m to fixedpointnum
       
         ptr=(unsigned char *)&longvalue;
       
@@ -283,7 +283,7 @@ char read_gps() {
         *ptr++ = lib_i2c_readack();
         *ptr = lib_i2c_readnak();
       
-        global.gpsCurrentLongitude=lib_fp_multiply(longvalue,27488L); // convert from 10,000,000 m to fixedpointnum
+        global.gps.currentLongitude=lib_fp_multiply(longvalue,27488L); // convert from 10,000,000 m to fixedpointnum
 
         int intvalue;
         ptr= (unsigned char *)&intvalue;
@@ -295,13 +295,13 @@ char read_gps() {
         *ptr++ = lib_i2c_readack();
         *ptr++ = lib_i2c_readack();
       
-        global.gpsCurrentSpeed=intvalue*665L; // convert fro cm/s to fixedpointnum to m/s
+        global.gps.currentSpeed=intvalue*665L; // convert fro cm/s to fixedpointnum to m/s
       
         ptr= (unsigned char *)&intvalue;
         *ptr++ = lib_i2c_readack();
         *ptr = lib_i2c_readnak();
 
-        global.gpsCurrentAltitude=((fixedpointnum)intvalue)<<FIXEDPOINTSHIFT;
+        global.gps.currentAltitude=((fixedpointnum)intvalue)<<FIXEDPOINTSHIFT;
 
         lib_i2c_stop();
         return(1);

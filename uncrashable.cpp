@@ -54,7 +54,7 @@ void uncrashable(unsigned char gotNewGpsReading, fixedpointnum *angleError, fixe
             // Use Altitude Hold to bring us back to the maximum altitude.
             global.altitudeHoldDesiredAltitude=uncrashabilityMinimumAltitude+FPUNCRAHSABLE_MAX_ALTITUDE_OFFSET;
             global.integratedAltitudeError=0;
-            global.altitudeHoldActive=1;
+            global.state.altitudeHold=1;
         } else if (projectedAltitude<uncrashabilityMinimumAltitude) {
             // We are about to get below our minimum crashability altitude
             if (doingUncrashableAltitudeHold==0) { // if we just entered uncrashability, set our desired altitude to the current altitude
@@ -66,7 +66,7 @@ void uncrashable(unsigned char gotNewGpsReading, fixedpointnum *angleError, fixe
             // don't apply throttle until we are almost level
             if (global.estimatedDownVector[Z_INDEX]>FIXEDPOINTCONSTANT(.4)) {
                 global.altitudeHoldDesiredAltitude=uncrasabilityDesiredAltitude;
-                global.altitudeHoldActive=1;
+                global.state.altitudeHold=1;
             } else throttleOutput=0;
                 // we are trying to rotate to level, kill the throttle until we get there
                 
@@ -79,11 +79,11 @@ void uncrashable(unsigned char gotNewGpsReading, fixedpointnum *angleError, fixe
                     // Next, check to see if our GPS says we are out of bounds
                     // are we out of bounds?
                     fixedpointnum bearingFromHome;
-        fixedpointnum distanceFromHome=navigation_get_distance_and_bearing(global.gpsCurrentLatitude,global.gpsCurrentLongitude,global.gpsHomeLatitude,global.gpsHomeLongitude,&bearingFromHome);
+        fixedpointnum distanceFromHome=navigation_get_distance_and_bearing(global.gps.currentLatitude,global.gps.currentLongitude,global.home.latitude,global.home.longitude,&bearingFromHome);
         
         if (distanceFromHome>FPUNCRASHABLE_RADIUS) { // we are outside the allowable area, navigate back toward home
             if (!doingUncrashableNavigationFlag) { // we just started navigating, so we have to set the destination
-                navigation_set_destination(global.gpsHomeLatitude,global.gpsHomeLongitude);
+                navigation_set_destination(global.home.latitude,global.home.longitude);
                 doingUncrashableNavigationFlag=1;
             }
             

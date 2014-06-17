@@ -65,7 +65,7 @@ fixedpointnum currentDValueShifted;
 char cyclecount=1;
 
 void autotune(fixedpointnum *angleError,unsigned char startingOrStopping) {
-    if (!global.armed) {
+    if (!global.state.armed) {
         // we aren't armed.  Don't do anything, but if autotuning is started and we have collected
         // autotuning data, save our settings to eeprom
         if (startingOrStopping==AUTOTUNESTARTING && targetAngle!=0) write_user_settings_to_eeprom();
