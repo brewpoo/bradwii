@@ -94,10 +94,6 @@ m
 globalstruct global; // global variables
 usersettingsstruct usersettings; // user editable variables
 
-fixedpointnum altitudeHoldDesiredAltitude;
-fixedpointnum integratedAltitudeError; // for pid control
-fixedpointnum integratedAngleError[3];
-
 // limit pid windup
 #define INTEGRATED_ANGLE_ERROR_LIMIT FIXEDPOINTCONSTANT(5000) 
 
@@ -223,9 +219,9 @@ int main(void) {
            reset_pilot_control();
          
            // bleed off integrated error by averaging in a value of zero
-           lib_fp_lowpassfilter(&integratedAngleError[ROLL_INDEX],0L,global.timesliver>>TIMESLIVEREXTRASHIFT,FIXEDPOINTONEOVERONEFOURTH,0);
-           lib_fp_lowpassfilter(&integratedAngleError[PITCH_INDEX],0L,global.timesliver>>TIMESLIVEREXTRASHIFT,FIXEDPOINTONEOVERONEFOURTH,0);
-           lib_fp_lowpassfilter(&integratedAngleError[YAW_INDEX],0L,global.timesliver>>TIMESLIVEREXTRASHIFT,FIXEDPOINTONEOVERONEFOURTH,0);
+           lib_fp_lowpassfilter(&global.integratedAngleError[ROLL_INDEX],0L,global.timesliver>>TIMESLIVEREXTRASHIFT,FIXEDPOINTONEOVERONEFOURTH,0);
+           lib_fp_lowpassfilter(&global.integratedAngleError[PITCH_INDEX],0L,global.timesliver>>TIMESLIVEREXTRASHIFT,FIXEDPOINTONEOVERONEFOURTH,0);
+           lib_fp_lowpassfilter(&global.integratedAngleError[YAW_INDEX],0L,global.timesliver>>TIMESLIVEREXTRASHIFT,FIXEDPOINTONEOVERONEFOURTH,0);
        }
 
 #ifndef NO_AUTOTUNE
@@ -247,101 +243,32 @@ int main(void) {
 
        // keep a flag to indicate whether we shoud apply altitude hold.  The pilot can turn it on or
        // uncrashability mode can turn it on.
-       unsigned char altitudeHoldActive=0;
+       global.altitudeHoldActive=0;
       
        if (global.activeCheckboxItems & CHECKBOX_MASK_ALTHOLD) {
-           altitudeHoldActive=1;
+           global.altitudeHoldActive=1;
            if (!(global.previousActiveCheckboxItems & CHECKBOX_MASK_ALTHOLD)) {
                // we just turned on alt hold.  Remember our current alt. as our target
-               altitudeHoldDesiredAltitude=global.altitude;
-               integratedAltitudeError=0;
+               global.altitudeHoldDesiredAltitude=global.altitude;
+               global.integratedAltitudeError=0;
            }
        }
        
 #ifndef NO_UNCRASHABLE
-    #if (GPS_TYPE!=NO_GPS)
-       // keep a flag that tells us whether uncrashability is doing gps navigation or not
-       static unsigned char doingUncrashableNavigationFlag;
-    #endif
-       // we need a place to remember what the altitude was when uncrashability mode was turned on
-       static fixedpointnum uncrashabilityMinimumAltitude;
-       static fixedpointnum uncrasabilityDesiredAltitude;
-       static unsigned char doingUncrashableAltitudeHold=0;
-      
-       if (global.activeCheckboxItems & CHECKBOX_MASK_UNCRASHABLE) { // uncrashable mode
-           // First, check our altitude
-           // are we about to crash?
-           if (!(global.previousActiveCheckboxItems & CHECKBOX_MASK_UNCRASHABLE)) { // we just turned on uncrashability.  Remember our current altitude as our new minimum altitude.
-               uncrashabilityMinimumAltitude=global.altitude;
-    #if (GPS_TYPE!=NO_GPS)
-               doingUncrashableNavigationFlag=0;
-               // set this location as our new home
-               navigation_set_home_to_current_location();
-    #endif
-           }
-         
-           // calculate our projected altitude based on how fast our altitude is changing
-           fixedpointnum projectedAltitude=global.altitude+lib_fp_multiply(global.altitudeVelocity,UNCRASHABLELOOKAHEADTIME);
-         
-           if (projectedAltitude>uncrashabilityMinimumAltitude+FPUNCRAHSABLE_MAX_ALTITUDE_OFFSET) { // we are getting too high
-               // Use Altitude Hold to bring us back to the maximum altitude.
-               altitudeHoldDesiredAltitude=uncrashabilityMinimumAltitude+FPUNCRAHSABLE_MAX_ALTITUDE_OFFSET;
-               integratedAltitudeError=0;
-               altitudeHoldActive=1;
-           } else if (projectedAltitude<uncrashabilityMinimumAltitude) {
-               // We are about to get below our minimum crashability altitude
-               if (doingUncrashableAltitudeHold==0) { // if we just entered uncrashability, set our desired altitude to the current altitude
-                   uncrasabilityDesiredAltitude=global.altitude;
-                   integratedAltitudeError=0;
-                   doingUncrashableAltitudeHold=1;
-               }
-            
-               // don't apply throttle until we are almost level
-               if (global.estimatedDownVector[Z_INDEX]>FIXEDPOINTCONSTANT(.4)) {
-                   altitudeHoldDesiredAltitude=uncrasabilityDesiredAltitude;
-                   altitudeHoldActive=1;
-               } else throttleOutput=0;
-               // we are trying to rotate to level, kill the throttle until we get there
-
-               // make sure we are level!  Don't let the pilot command more than UNCRASHABLERECOVERYANGLE
-               lib_fp_constrain(&angleError[ROLL_INDEX],-UNCRASHABLERECOVERYANGLE-global.currentEstimatedEulerAttitude[ROLL_INDEX],UNCRASHABLERECOVERYANGLE-global.currentEstimatedEulerAttitude[ROLL_INDEX]);
-               lib_fp_constrain(&angleError[PITCH_INDEX],-UNCRASHABLERECOVERYANGLE-global.currentEstimatedEulerAttitude[PITCH_INDEX],UNCRASHABLERECOVERYANGLE-global.currentEstimatedEulerAttitude[PITCH_INDEX]);
-           } else doingUncrashableAltitudeHold=0;
-         
-    #if (GPS_TYPE!=NO_GPS)
-           // Next, check to see if our GPS says we are out of bounds
-           // are we out of bounds?
-           fixedpointnum bearingFromHome;
-           fixedpointnum distanceFromHome=navigation_get_distance_and_bearing(global.gpsCurrentLatitude,global.gpsCurrentLongitude,global.gpsHomeLatitude,global.gpsHomeLongitude,&bearingFromHome);
-         
-           if (distanceFromHome>FPUNCRASHABLE_RADIUS) { // we are outside the allowable area, navigate back toward home
-               if (!doingUncrashableNavigationFlag) { // we just started navigating, so we have to set the destination
-                   navigation_set_destination(global.gpsHomeLatitude,global.gpsHomeLongitude);
-                   doingUncrashableNavigationFlag=1;
-               }
-               
-               // Let the navigation figure out our roll and pitch attitudes
-               navigation_set_angle_error(gotNewGpsReading,angleError);
-           }
-           else doingUncrashableNavigationFlag=0;
-    #endif
-         }
-    #if (GPS_TYPE!=NO_GPS)
-       else doingUncrashableNavigationFlag=0;
-    #endif
-#endif // Uncrashable
+        uncrashable(gotNewGpsReading,angleError,&throttleOutput);
+#endif
         
 #if (BAROMETER_TYPE!=NO_BAROMETER)
        // check for altitude hold and adjust the throttle output accordingly
-       if (altitudeHoldActive) {
-           integratedAltitudeError+=lib_fp_multiply(altitudeHoldDesiredAltitude-global.altitude,global.timesliver);
-           lib_fp_constrain(&integratedAltitudeError,-INTEGRATED_ANGLE_ERROR_LIMIT,INTEGRATED_ANGLE_ERROR_LIMIT); // don't let the integrated error get too high
+       if (global.altitudeHoldActive) {
+           global.integratedAltitudeError+=lib_fp_multiply(global.altitudeHoldDesiredAltitude-global.altitude,global.timesliver);
+           lib_fp_constrain(&global.integratedAltitudeError,-INTEGRATED_ANGLE_ERROR_LIMIT,INTEGRATED_ANGLE_ERROR_LIMIT); // don't let the integrated error get too high
          
            // do pid for the altitude hold and add it to the throttle output
-           throttleOutput+=lib_fp_multiply(altitudeHoldDesiredAltitude-global.altitude,usersettings.pid_pgain[ALTITUDE_INDEX])-lib_fp_multiply(global.altitudeVelocity,usersettings.pid_dgain[ALTITUDE_INDEX])+lib_fp_multiply(integratedAltitudeError,usersettings.pid_igain[ALTITUDE_INDEX]);
+           throttleOutput+=lib_fp_multiply(global.altitudeHoldDesiredAltitude-global.altitude,usersettings.pid_pgain[ALTITUDE_INDEX])-lib_fp_multiply(global.altitudeVelocity,usersettings.pid_dgain[ALTITUDE_INDEX])+lib_fp_multiply(global.integratedAltitudeError,usersettings.pid_igain[ALTITUDE_INDEX]);
        }
 #endif
-       if ((global.activeCheckboxItems & CHECKBOX_MASK_AUTOTHROTTLE) || altitudeHoldActive) {
+       if ((global.activeCheckboxItems & CHECKBOX_MASK_AUTOTHROTTLE) || global.altitudeHoldActive) {
            // Auto Throttle Adjust - Increases the throttle when the aircraft is tilted so that the vertical
            // component of thrust remains constant.
            // The AUTOTHROTTLE_DEAD_AREA adjusts the value at which the throttle starts taking effect.  If this
@@ -373,7 +300,7 @@ int main(void) {
        // calculate output values.  Output values will range from 0 to 1.0
 
        // calculate pid outputs based on our angleErrors as inputs
-       fixedpointnum pidoutput[3];
+       fixedpointnum pidOutput[3];
       
        // Gain Scheduling essentialy modifies the gains depending on
        // throttle level. If GAIN_SCHEDULING_FACTOR is 1.0, it multiplies PID outputs by 1.5 when at full throttle,
@@ -382,21 +309,21 @@ int main(void) {
        fixedpointnum gainSchedulingMultiplier=lib_fp_multiply(throttleOutput-FIXEDPOINTCONSTANT(.5),FIXEDPOINTCONSTANT(GAIN_SCHEDULING_FACTOR))+FIXEDPOINTONE;
       
        for (int x=0;x<3;++x) {
-           integratedAngleError[x]+=lib_fp_multiply(angleError[x],global.timesliver);
+           global.integratedAngleError[x]+=lib_fp_multiply(angleError[x],global.timesliver);
          
            // don't let the integrated error get too high (windup)
-           lib_fp_constrain(&integratedAngleError[x],-INTEGRATED_ANGLE_ERROR_LIMIT,INTEGRATED_ANGLE_ERROR_LIMIT);
+           lib_fp_constrain(&global.integratedAngleError[x],-INTEGRATED_ANGLE_ERROR_LIMIT,INTEGRATED_ANGLE_ERROR_LIMIT);
          
            // do the attitude pid
-           pidoutput[x]=lib_fp_multiply(angleError[x],usersettings.pid_pgain[x])-lib_fp_multiply(global.gyrorate[x],usersettings.pid_dgain[x])+(lib_fp_multiply(integratedAngleError[x],usersettings.pid_igain[x])>>4);
+           pidOutput[x]=lib_fp_multiply(angleError[x],usersettings.pid_pgain[x])-lib_fp_multiply(global.gyrorate[x],usersettings.pid_dgain[x])+(lib_fp_multiply(global.integratedAngleError[x],usersettings.pid_igain[x])>>4);
             
            // add gain scheduling.
-           pidoutput[x]=lib_fp_multiply(gainSchedulingMultiplier,pidoutput[x]);
+           pidOutput[x]=lib_fp_multiply(gainSchedulingMultiplier,pidOutput[x]);
        }
 
        lib_fp_constrain(&throttleOutput,0,FIXEDPOINTONE); // Keep throttle output between 0 and 1
 
-       compute_mix(throttleOutput, pidoutput); // aircraft type dependent mixes
+       compute_mix(throttleOutput, pidOutput); // aircraft type dependent mixes
        
 #if (NUM_SERVOS>0)
        // do not update servos during unarmed calibration of sensors which are sensitive to vibration

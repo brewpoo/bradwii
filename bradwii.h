@@ -55,6 +55,10 @@ typedef struct {
     fixedpointnum correctedVectorGs[3];                  // Corrected accelerometer vector, in G's
     fixedpointnum altitude;                           // A filtered version of the baromemter's altitude
     fixedpointnum altitudeVelocity;                  // The rate of change of the altitude
+    unsigned char altitudeHoldActive;               // Altitude hold is engaged
+    fixedpointnum altitudeHoldDesiredAltitude;
+    fixedpointnum integratedAltitudeError;          // for pid control
+    fixedpointnum integratedAngleError[3];
     fixedpointnum estimatedDownVector[3];            // A unit vector (approximately) poining in the direction we think down is relative to the aircraft
     fixedpointnum estimatedWestVector[3];            // A unit vector (approximately) poining in the direction we think west is relative to the aircraft
     fixedpointnum currentEstimatedEulerAttitude[3]; // Euler Angles in degrees of how much we think the aircraft is Rolled, Pitched, and Yawed (from North)

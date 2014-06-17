@@ -22,3 +22,5 @@
 #define UNCRASHABLERECOVERYANGLE FIXEDPOINTCONSTANT(15) // don't let the pilot pitch or roll more than 20 degrees when altitude is too low.
 #define FPUNCRASHABLE_RADIUS FIXEDPOINTCONSTANT(UNCRAHSABLE_RADIUS)
 #define FPUNCRAHSABLE_MAX_ALTITUDE_OFFSET FIXEDPOINTCONSTANT(UNCRAHSABLE_MAX_ALTITUDE_OFFSET)
+
+void uncrashable(unsigned char gotNewGpsReading, fixedpointnum *angleError, fixedpointnum *throttleOutput);
