@@ -150,7 +150,7 @@ void evaluate_command(unsigned char portnumber,unsigned char *data) {
         send_and_checksum_data(portnumber,(unsigned char *)&value,2);
         value=(global.currentEstimatedEulerAttitude[2])>>FIXEDPOINTSHIFT;
         send_and_checksum_data(portnumber,(unsigned char *)&value,2);
-    } else if (command==MSP_ALTITUDE) { // send attitude data
+    } else if (command==MSP_ALTITUDE) { // send altitude data
         send_good_header(portnumber,4);
         fixedpointnum fp=(global.altitude*25)>>(FIXEDPOINTSHIFT-2);
         send_and_checksum_data(portnumber,(unsigned char *)&fp,4);
@@ -249,7 +249,7 @@ void evaluate_command(unsigned char portnumber,unsigned char *data) {
       send_good_header(portnumber,0);
       }
    else if (command==MSP_DEBUG)
-      { // send attitude data
+      { // send debug data
       send_good_header(portnumber,8);
       for (int x=0;x<4;++x)
          { // convert from g's to what multiwii uses
@@ -332,6 +332,315 @@ void evaluate_command(unsigned char portnumber,unsigned char *data) {
       }
    lib_serial_sendchar(portnumber,serialchecksum[portnumber]);
    }
+
+//void  s_struct(uint8_t *cb,uint8_t siz) {
+//    headSerialReply(siz);
+//    while(siz--) serialize8(*cb++);
+//}
+
+void evaluate_command2(unsigned char portnumber,unsigned char *data) {
+    unsigned char command=serialcommand[portnumber];
+    
+    switch (command) {
+        case MSP_IDENT: {
+            // Send identity
+            send_good_header(portnumber,7);
+            send_and_checksum_character(portnumber,VERSION);
+            send_and_checksum_character(portnumber,AIRCRAFT_CONFIGURATION);
+            send_and_checksum_character(portnumber,MSP_VERSION);
+            for (int x=0;x<4;++x) send_and_checksum_character(portnumber,0); // 32 bit "capability"
+            break;
+        }
+        
+        case MSP_STATUS: {
+            // Send current status
+            send_good_header(portnumber,10);
+            send_and_checksum_int(portnumber,(global.timesliver*15)>>8); // convert from fixedpointnum to microseconds
+            send_and_checksum_int(portnumber,lib_i2c_error_count); // i2c error count
+            send_and_checksum_int(portnumber,CAPABILITES); // baro mag, gps, sonar
+            send_and_checksum_data(portnumber,(unsigned char *)&global.activeCheckboxItems,4); // options1
+            break;
+        }
+            
+        case MSP_RC: {
+            // Send Rx values
+            send_good_header(portnumber,16);
+            for (int x=0;x<8;++x) {
+                int value=0;
+                if (x<RX_NUM_CHANNELS) value=((global.rxValues[x]*500L)>>FIXEDPOINTSHIFT)+1500;
+                send_and_checksum_data(portnumber,(unsigned char *)&value,2);
+            }
+            break;
+        }
+            
+        case MSP_ATTITUDE: {
+            // Send attitude data
+            send_good_header(portnumber,6);
+            // convert our estimated gravity vector into roll and pitch angles
+            int value;
+            value=(global.currentEstimatedEulerAttitude[0]*10)>>FIXEDPOINTSHIFT;
+            send_and_checksum_data(portnumber,(unsigned char *)&value,2);
+            value=(global.currentEstimatedEulerAttitude[1]*10)>>FIXEDPOINTSHIFT;
+            send_and_checksum_data(portnumber,(unsigned char *)&value,2);
+            value=(global.currentEstimatedEulerAttitude[2])>>FIXEDPOINTSHIFT;
+            send_and_checksum_data(portnumber,(unsigned char *)&value,2);
+            break;
+        }
+            
+        case MSP_ALTITUDE: {
+            // Send altitude data
+            send_good_header(portnumber,4);
+            fixedpointnum fp=(global.altitude*25)>>(FIXEDPOINTSHIFT-2);
+            send_and_checksum_data(portnumber,(unsigned char *)&fp,4);
+            break;
+        }
+            
+        case MSP_MAG_CALIBRATION: {
+            // Calibrate compass
+            if (!global.state.armed) calibrate_compass();
+            send_good_header(portnumber,0);
+            break;
+        }
+            
+        case MSP_ACC_CALIBRATION: {
+            // Calibrate acc/gyros
+            if (!global.state.armed) {
+                global.state.calibratingAccAndGyro=1;
+                calibrate_gyro_and_accelerometer();
+            }
+            send_good_header(portnumber,0);
+            break;
+        }
+            
+        case MSP_RAW_IMU: {
+            // Send raw attitude
+            send_good_header(portnumber,18);
+            for (int x=0;x<3;++x) { // convert from g's to what multiwii uses
+                int value=global.correctedVectorGs[x]>>8;
+                send_and_checksum_data(portnumber,(unsigned char *)&value,2);
+            }
+            for (int x=0;x<3;++x) { // convert from degrees per second to /8000
+                int value=(global.gyrorate[x])>>14; // this is aproximate
+                send_and_checksum_data(portnumber,(unsigned char *)&value,2);
+            }
+            for (int x=0;x<3;++x) { // convert from
+                int value=(global.compassVector[x])>>8;
+                send_and_checksum_data(portnumber,(unsigned char *)&value,2);
+            }
+            break;
+        }
+            
+        case MSP_MOTOR: {
+            // send motor output values
+            send_good_header(portnumber,16);
+            for (int x=0;x<8;++x) {
+                if (x < NUM_MOTORS) {
+                    send_and_checksum_int(portnumber,global.motorOutputValue[x]); // current motor value
+                } else {
+                    send_and_checksum_int(portnumber,0);
+                }
+            }
+            break;
+        }
+            
+        case MSP_SERVO: {
+            // send servo output data
+            send_good_header(portnumber,16);
+            for (int x=0;x<8;++x) {
+                if (x < NUM_SERVOS) {
+                    send_and_checksum_int(portnumber,global.servoOutputValue[x]); // current servo value
+                } else {
+                    send_and_checksum_int(portnumber,0);
+                }
+            }
+            break;
+        }
+            
+        case MSP_PID: {
+            // send pid data
+            send_good_header(portnumber,3*NUM_PID_ITEMS);
+            for (int x=0;x<NUM_PID_ITEMS;++x) {
+                if (x==ALTITUDE_INDEX) {
+                   send_and_checksum_character(portnumber,settings.pid_pgain[x]>>7);
+                } else if (x==NAVIGATION_INDEX) {
+                    send_and_checksum_character(portnumber,settings.pid_pgain[x]>>11);
+                } else {
+                    send_and_checksum_character(portnumber,settings.pid_pgain[x]>>3);
+                }
+                send_and_checksum_character(portnumber,settings.pid_igain[x]);
+                if (x==NAVIGATION_INDEX) {
+                    send_and_checksum_character(portnumber,settings.pid_dgain[x]>>8);
+                } else if (x==ALTITUDE_INDEX) {
+                    send_and_checksum_character(portnumber,settings.pid_dgain[x]>>9);
+                } else {
+                    send_and_checksum_character(portnumber,settings.pid_dgain[x]>>2);
+                }
+            }
+            break;
+        }
+            
+        case MSP_SET_PID: {
+            for (int x=0;x<NUM_PID_ITEMS;++x) {
+                if (x==ALTITUDE_INDEX) {
+                    settings.pid_pgain[x]=((fixedpointnum)(*data++))<<7;
+                } else if (x==NAVIGATION_INDEX) {
+                    settings.pid_pgain[x]=((fixedpointnum)(*data++))<<11;
+                } else {
+                    settings.pid_pgain[x]=((fixedpointnum)(*data++))<<3;
+                }
+                settings.pid_igain[x]=((fixedpointnum)(*data++));
+                if (x==NAVIGATION_INDEX) {
+                    settings.pid_dgain[x]=((fixedpointnum)(*data++))<<8;
+                } else if (x==ALTITUDE_INDEX) {
+                    settings.pid_dgain[x]=((fixedpointnum)(*data++))<<9;
+                } else {
+                    settings.pid_dgain[x]=((fixedpointnum)(*data++))<<2;
+                }
+                
+            }
+            // while testing, make roll pid equal to pitch pid so I only have to change one thing.
+            //settings.pid_pgain[ROLL_INDEX]=settings.pid_pgain[PITCH_INDEX];
+            //settings.pid_igain[ROLL_INDEX]=settings.pid_igain[PITCH_INDEX];
+            //settings.pid_dgain[ROLL_INDEX]=settings.pid_dgain[PITCH_INDEX];
+            send_good_header(portnumber,0);
+            break;
+        }
+        case MSP_SERVO_CONF:
+            // s_struct((uint8_t*)&conf.servoConf[0].min,56); // struct servo_conf_ is 7 bytes length: min:2 / max:2 / middle:2 / rate:1    ----     8 servo =>  8x7 = 56
+            // send servo conf data
+            send_good_header(portnumber,56);
+            for (int x=0;x<8;++x) {
+                if (x < NUM_SERVOS) {
+                    send_and_checksum_int(portnumber,settings.servo[x].min); // min
+                    send_and_checksum_int(portnumber,settings.servo[x].max); // max
+                    send_and_checksum_int(portnumber,settings.servo[x].middle); // middle
+                    send_and_checksum_character(portnumber,settings.servo[x].rate); // rate
+                } else {
+                    send_and_checksum_int(portnumber,0);
+                    send_and_checksum_int(portnumber,0);
+                    send_and_checksum_int(portnumber,0);
+                    send_and_checksum_character(portnumber,0);
+                }
+            }
+            break;
+            
+        case MSP_SET_SERVO_CONF:
+            //s_struct_w((uint8_t*)&conf.servoConf[0].min,56);
+            for (int x=0;x<8;++x) {
+                if (x < NUM_SERVOS) {
+                    settings.servo[x].min=((int)(*data++));
+                    settings.servo[x].max=((int)(*data++));
+                    settings.servo[x].middle=((int)(*data++));
+                    settings.servo[x].rate=((char)(*data++));
+                } else {
+                    // nothing?
+                }
+            }
+            send_good_header(portnumber,0);
+            break;
+            
+        case MSP_DEBUG: {
+            send_good_header(portnumber,8);
+            for (int x=0;x<4;++x) {
+                int value=global.debugValue[x];
+                send_and_checksum_data(portnumber,(unsigned char *)&value,2);
+            }
+            break;
+        }
+            
+        case MSP_BOXNAMES: {
+            // send names of checkboxes
+            char length=strlen(checkboxnames);
+            send_good_header(portnumber,length);
+            send_and_checksum_data(portnumber,(unsigned char *)checkboxnames,length);
+            break;
+        }
+            
+        case MSP_BOX: {
+            // send check box settings
+            send_good_header(portnumber,NUM_CHECKBOXES*2);
+            send_and_checksum_data(portnumber,(unsigned char *)settings.checkboxConfiguration,NUM_CHECKBOXES*2);
+            break;
+        }
+            
+        case MSP_SET_BOX: {
+            // receive check box settings
+            unsigned char *ptr=(unsigned char *)settings.checkboxConfiguration;
+            for (int x=0;x<NUM_CHECKBOXES*2;++x) {
+                *ptr++=*data++;
+            }
+            break;
+        }
+            
+        case MSP_RESET_CONF: {
+            // reset user settings
+            send_good_header(portnumber,0);
+            default_user_settings();
+            break;
+        }
+            
+        case MSP_EEPROM_WRITE: {
+            // reset user settings
+            send_good_header(portnumber,0);
+            if (!global.state.armed) write_user_settings_to_eeprom();
+            break;
+        }
+            
+        case MSP_RAW_GPS: {
+            // reset user settings
+            send_good_header(portnumber,14);
+            send_and_checksum_character(portnumber,0); // gps fix
+            send_and_checksum_character(portnumber, global.gps.numSatelites);
+            send_and_checksum_long(portnumber,lib_fp_multiply(global.gps.currentLatitude,156250L)); //156250L is 10,000,000L>>LATLONGEXTRASHIFT);
+            send_and_checksum_long(portnumber,lib_fp_multiply(global.gps.currentLongitude,156250L));
+            send_and_checksum_int(portnumber,global.gps.currentAltitude>>FIXEDPOINTSHIFT); // gps altitude
+            send_and_checksum_int(portnumber,(global.gps.currentSpeed*100)>>FIXEDPOINTSHIFT); // gps speed
+            break;
+        }
+            
+        case MSP_COMP_GPS: {
+            // reset user settings
+            send_good_header(portnumber,5);
+            send_and_checksum_int(portnumber,(global.navigationDistance)>>FIXEDPOINTSHIFT);
+            send_and_checksum_int(portnumber,(global.navigationBearing)>>FIXEDPOINTSHIFT);
+            send_and_checksum_character(portnumber,0); // gps update
+            break;
+        }
+            
+        case MSP_RC_TUNING: {
+            // user settings
+            send_good_header(portnumber,7);
+            send_and_checksum_character(portnumber,0); // rcRate
+            send_and_checksum_character(portnumber,0); // rcExpo
+            send_and_checksum_character(portnumber,settings.maxPitchAndRollRate>>(FIXEDPOINTSHIFT+3)); // rollPitchRate
+            send_and_checksum_character(portnumber,settings.maxYawRate>>(FIXEDPOINTSHIFT+2)); // yawRate
+            send_and_checksum_character(portnumber,0); // dynThrPID
+            send_and_checksum_character(portnumber,0); // thrMid8
+            send_and_checksum_character(portnumber,0); // thrExpo8
+            break;
+        }
+        
+        case MSP_SET_RC_TUNING: {
+            // user settings
+            data++; //rcRate
+            data++; //rcExpo
+            settings.maxPitchAndRollRate=((fixedpointnum)(*data++))<<(FIXEDPOINTSHIFT+3); // rollPitchRate
+            settings.maxYawRate=((fixedpointnum)(*data++))<<(FIXEDPOINTSHIFT+2); // yawRate
+            data++; // dynThrPID
+            data++; // thrMid8
+            data++; // thrExpo8
+            send_good_header(portnumber,0);
+            break;
+        }
+            
+        default: {
+            // Unknown command
+            send_error_header(portnumber);
+            break;
+        }
+    }
+    lib_serial_sendchar(portnumber,serialchecksum[portnumber]);
+}
 
 #define MAXPAYLOADSIZE 64
 

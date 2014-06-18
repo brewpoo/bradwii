@@ -42,6 +42,8 @@ void serial_check_for_action();
 #define MSP_BOXNAMES             116   //out message         the aux switch names
 #define MSP_PIDNAMES             117   //out message         the PID names
 #define MSP_WP                   118   //out message         get a WP, WP# is in the payload, returns (WP#, lat, lon, alt, flags) WP#0-home, WP#16-poshold
+#define MSP_BOXIDS               119   //out message         get the permanent IDs associated to BOXes
+#define MSP_SERVO_CONF           120   //out message         Servo settings
 
 #define MSP_SET_RAW_RC           200   //in message          8 rc chan
 #define MSP_SET_RAW_GPS          201   //in message          fix, numsat, lat, lon, alt, speed
@@ -53,6 +55,8 @@ void serial_check_for_action();
 #define MSP_SET_MISC             207   //in message          powermeter trig + 8 free for future use
 #define MSP_RESET_CONF           208   //in message          no param
 #define MSP_WP_SET               209   //in message          sets a given WP (WP#,lat, lon, alt, flags)
+#define MSP_SET_SERVO_CONF       212   //in message          Servo settings
+#define MSP_SET_MOTOR            214   //in message          PropBalance function
 
 #define MSP_EEPROM_WRITE         250   //in message          no param
 
