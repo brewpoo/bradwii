@@ -23,21 +23,21 @@ extern globalstruct global;
 extern settingsstruct settings;
 
 char checkboxnames[]/* PROGMEM */= // names for dynamic generation of config GUI
-   // this could be moved to program memory if we wanted to save a few bytes of space.
-   "Arm;"
-   "Thr. Helper;"
-   "Alt. Hold;"
-   "Mag. Hold;"
-   "Pos. Hold;"
-   "Ret. Home;"
-   "Semi Acro;"
-   "Full Acro;"
-   "High Rates;"
-   "High Angle;"
-   "Auto Tune;"
-   "Uncrashable;"
-   "HF"
-   ;
+    // this could be moved to program memory if we wanted to save a few bytes of space.
+    "Arm;"
+    "Thr. Helper;"
+    "Alt. Hold;"
+    "Mag. Hold;"
+    "Pos. Hold;"
+    "Ret. Home;"
+    "Semi Acro;"
+    "Full Acro;"
+    "High Rates;"
+    "High Angle;"
+    "Auto Tune;"
+    "Uncrashable;"
+    "Headfree;"
+    "Autopilot;";
 
 // each checkbox item has a checkboxvalue.  The bits in this value represent low, medium, and high checkboxes
 // for each of the aux switches, just as they show up in most config programs.

@@ -11,6 +11,8 @@
 		B238AEB5194B387100B860E8 /* uncrashable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = uncrashable.h; sourceTree = SOURCE_ROOT; };
 		B238AEB6194B5B4F00B860E8 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		B238AEB7194B5B8100B860E8 /* ReadMe.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ReadMe.txt; sourceTree = "<group>"; };
+		B29C212D1951C13D0057BD23 /* autopilot.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = autopilot.cpp; sourceTree = SOURCE_ROOT; };
+		B29C212E1951C1510057BD23 /* autopilot.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = autopilot.h; sourceTree = SOURCE_ROOT; };
 		B2CF62F61949EEB200992E65 /* eeprom.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = eeprom.cpp; sourceTree = SOURCE_ROOT; };
 		B2CF62F71949EEB200992E65 /* bradwii.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bradwii.h; sourceTree = SOURCE_ROOT; };
 		B2CF62F81949EEB200992E65 /* bradwii.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = bradwii.cpp; sourceTree = SOURCE_ROOT; };
@@ -87,6 +89,8 @@
 				B2CF631B1949EEB200992E65 /* accelerometer.h */,
 				B2CF631A1949EEB200992E65 /* aircraft.cpp */,
 				B2CF63191949EEB200992E65 /* aircraft.h */,
+				B29C212D1951C13D0057BD23 /* autopilot.cpp */,
+				B29C212E1951C1510057BD23 /* autopilot.h */,
 				B2CF63181949EEB200992E65 /* autotune.cpp */,
 				B2CF63171949EEB200992E65 /* autotune.h */,
 				B238AEB4194B385B00B860E8 /* uncrashable.cpp */,

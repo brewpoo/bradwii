@@ -44,6 +44,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define NAVIGATION_MODE_OFF 0
 #define NAVIGATION_MODE_POSITION_HOLD 1
 #define NAVIGATION_MODE_RETURN_TO_HOME 2
+#define NAVIGATION_MODE_AUTOPILOT 3
 
 typedef struct {
     unsigned char numSatelites;             // How many satelites do we currently see?
@@ -133,7 +134,7 @@ typedef struct {
     unsigned int checkboxConfiguration[NUM_POSSIBLE_CHECKBOXES]; // Bits that describe how the checkboxes are configured
     
     fixedpointnum gyroCalibration[3];                       // Offsets used to calibrate the gyro
-    fixedpointnum accCalibration[3]; // Offsets used to calibrate the accelerometer
+    fixedpointnum accCalibration[3];                        // Offsets used to calibrate the accelerometer
     
     fixedpointnum compassCalibrationMultiplier[3];          // Multipliers used to calibrate the compass
     int compassZeroOffset[3];                               // Offsets used to calibrate the compass

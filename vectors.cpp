@@ -88,7 +88,6 @@ void vector_difference_to_euler_angles(fixedpointnum *v1, fixedpointnum *v2, fix
    euler[1]=lib_fp_multiply(vector_dot_product(axisofrotation, unitvector), angle);
 }
    
-
 void rotate_vector_by_axis_angle(fixedpointnum *v1, fixedpointnum *axisvector, fixedpointnum angle, fixedpointnum *v2) {
    fixedpointnum cosineofangle=lib_fp_cosine(angle);
    fixedpointnum sineofangle=lib_fp_sine(angle);

@@ -172,6 +172,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define UNCRAHSABLE_MAX_ALTITUDE_OFFSET 30.0 // 30 meters above where uncrashability was enabled
 #define UNCRAHSABLE_RADIUS 50.0 // 50 meter radius
 
+// un-comment if you don't want to include autopilot code
+//#define NO_AUTOPILOT
+
 // Uncomment the following line if you want to modify gain scheduling.  Gain scheduling adjusts the PID gains
 // depending on the level of throttle.  It attempts to eliminate the wobbles while decending under low throttle.
 // A value of zero is no gain scheduling.  A value of 1.0 (the default) results in 50% gains at zero throttle, 100% gains at mid
