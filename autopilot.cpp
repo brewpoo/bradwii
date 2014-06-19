@@ -20,10 +20,17 @@
 #include "autopilot.h"
 #include "navigation.h"
 
+#include "lib_fp.h"
+
 extern globalstruct global;
 extern settingsstruct settings;
 
 #ifndef NO_AUTOPILOT
+
+#define WAYPOINT_LAT settings.waypoints[destinationWaypoint].location.latitude
+#define WAYPOINT_LON settings.waypoints[destinationWaypoint].location.longitude
+
+#define FP_NEAR_WAYPOINT_DISTANCE FIXEDPOINTCONSTANT(AUTOPILOT_NEAR_WAYPOINT_RADIUS)
 
 unsigned char traversing;
 unsigned int currentWaypoint;
@@ -36,7 +43,7 @@ void autopilot_init() {
     traversing=0;
 }
 
-bool autopilot_more_waypoints() {
+bool anymore_waypoints() {
     // determine if there are any waypoints left to visit
     if (destinationWaypoint>NUM_WAYPOINTS) {
         return false;
@@ -47,7 +54,7 @@ bool autopilot_more_waypoints() {
     return true;
 }
 
-void autopilot_navigate_to_next_waypoint() {
+void navigate_to_next_waypoint() {
     // update the target location/altitude
     waypointStruct thisWaypoint = settings.waypoints[++destinationWaypoint];
     navigation_set_destination(thisWaypoint.location.latitude,thisWaypoint.location.longitude);
@@ -56,8 +63,16 @@ void autopilot_navigate_to_next_waypoint() {
     traversing=1;
 }
 
-bool autopilot_reached_waypoint() {
+fixedpointnum distance_to_waypoint() {
     // if we are *near* the location of the waypoint
+    fixedpointnum bearing;
+    return navigation_get_distance_and_bearing(WAYPOINT_LAT,WAYPOINT_LON,global.gps.currentLatitude,global.gps.currentLongitude,&bearing);
+}
+
+bool reached_waypoint() {
+    if (lib_fp_abs(distance_to_waypoint())<FP_NEAR_WAYPOINT_DISTANCE) {
+        return true;
+    }
     return false;
 }
 
@@ -75,9 +90,9 @@ void autopilot(unsigned char autopilotState) {
         }
             
         case AUTOPILOT_RUNNING: {
-            if (autopilot_reached_waypoint()) {
-                if (autopilot_more_waypoints()) {
-                    autopilot_navigate_to_next_waypoint();
+            if (reached_waypoint()) {
+                if (anymore_waypoints()) {
+                    navigate_to_next_waypoint();
                 } else {
                     autopilot_reset();
                 }

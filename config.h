@@ -168,14 +168,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //#define GYRO_LOW_PASS_FILTER 2
 
 // un-comment if you don't want to include uncrashable code
-#define NO_UNCRASHABLE
+//#define NO_UNCRASHABLE
 #define UNCRAHSABLE_MAX_ALTITUDE_OFFSET 30.0 // 30 meters above where uncrashability was enabled
 #define UNCRAHSABLE_RADIUS 50.0 // 50 meter radius
 
 // un-comment if you don't want to include autopilot code
-#define NO_AUTOPILOT
-#define AUTOPILOT_NEAR_WAYPOINT_RADIUS 5.0 // 5 meters
+//#define NO_AUTOPILOT
+#define AUTOPILOT_NEAR_WAYPOINT_RADIUS 1.0 // 1 meters
 #define AUTOPILOT_MAX_SPEED            2.0  // 2 m/s (<5 mph)
+
+// Auto Throttle Adjust - Increases the throttle when the aircraft is tilted so that the vertical
+// component of thrust remains constant.
+// The AUTOTHROTTLE_DEAD_AREA adjusts the value at which the throttle starts taking effect.  If this
+// value is too low, the aircraft will gain altitude when banked, if it's too low, it will lose
+// altitude when banked. Adjust to suit.
+
+// un-comment if you don't want to include the autothrottle code
+//#define NO_AUTOTHROTTLE
+#define AUTOTHROTTLE_DEAD_AREA FIXEDPOINTCONSTANT(.25)
 
 // Uncomment the following line if you want to modify gain scheduling.  Gain scheduling adjusts the PID gains
 // depending on the level of throttle.  It attempts to eliminate the wobbles while decending under low throttle.

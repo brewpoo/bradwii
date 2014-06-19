@@ -265,7 +265,7 @@ int main(void) {
                 autopilot(AUTOPILOT_RUNNING);
             }
         } else if (global.previousActiveCheckboxItems & CHECKBOX_MASK_AUTOPILOT) {
-            // tell autotune that we just stopped autotuning
+            // tell autopilot that we just stopped autotuning
             autopilot(AUTOPILOT_STOPPING);
         } else {
             // get the pilot's throttle component
@@ -293,14 +293,9 @@ int main(void) {
            throttleOutput+=lib_fp_multiply(global.altitudeHoldDesiredAltitude-global.altitude,settings.pid_pgain[ALTITUDE_INDEX])-lib_fp_multiply(global.altitudeVelocity,settings.pid_dgain[ALTITUDE_INDEX])+lib_fp_multiply(global.integratedAltitudeError,settings.pid_igain[ALTITUDE_INDEX]);
        }
 #endif
-       if ((global.activeCheckboxItems & CHECKBOX_MASK_AUTOTHROTTLE) || global.state.altitudeHold) {
-           // Auto Throttle Adjust - Increases the throttle when the aircraft is tilted so that the vertical
-           // component of thrust remains constant.
-           // The AUTOTHROTTLE_DEAD_AREA adjusts the value at which the throttle starts taking effect.  If this
-           // value is too low, the aircraft will gain altitude when banked, if it's too low, it will lose
-           // altitude when banked. Adjust to suit.
-            #define AUTOTHROTTLE_DEAD_AREA FIXEDPOINTCONSTANT(.25)
 
+#ifndef NO_AUTOTHROTTLE
+       if ((global.activeCheckboxItems & CHECKBOX_MASK_AUTOTHROTTLE) || global.state.altitudeHold) {
            if (global.estimatedDownVector[Z_INDEX]>FIXEDPOINTCONSTANT(.3)) {
                // Divide the throttle by the throttleOutput by the z component of the down vector
                // This is probaly the slow way, but it's a way to do fixed point division
@@ -310,6 +305,7 @@ int main(void) {
                throttleOutput=lib_fp_multiply(throttleOutput-AUTOTHROTTLE_DEAD_AREA,recriprocal)+AUTOTHROTTLE_DEAD_AREA;
            }
        }
+#endif
 
 #ifndef NO_FAILSAFE
        // if we don't hear from the receiver for over a second, try to land safely
@@ -323,7 +319,6 @@ int main(void) {
 #endif
         
        // calculate output values.  Output values will range from 0 to 1.0
-
        // calculate pid outputs based on our angleErrors as inputs
        fixedpointnum pidOutput[3];
       

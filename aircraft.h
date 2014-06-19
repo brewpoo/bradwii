@@ -39,6 +39,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     #define MOTOR_3_PIN     D2_PIN
 
     #define NUM_SERVOS 0
+
 #elif (AIRCRAFT_CONFIGURATION==TRI)
     #define NUM_MOTORS 3
     #define TRI_REAR_MOTOR 0
@@ -57,6 +58,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     #define TRI_REAR_SERVO 0
     #define SERVO_0_CHANNEL D2_PWM
     #define SERVO_0_PIN     D2_PIN
+
 #else
   #error "Need to define an aircraft type"
 #endif
