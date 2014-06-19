@@ -294,25 +294,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
    #define D45_PWM (OUTPUT_TIMER5 | OUTPUT_CHANNELB)
    #define D46_PWM (OUTPUT_TIMER5 | OUTPUT_CHANNELA)
 
-    #define MOTOR_0_CHANNEL D8_PWM
-    #define MOTOR_0_PIN     D8_PIN
-    #define MOTOR_1_CHANNEL D7_PWM
-    #define MOTOR_1_PIN     D7_PIN
-    #define MOTOR_2_CHANNEL D6_PWM
-    #define MOTOR_2_PIN     D6_PIN
-    #define MOTOR_3_CHANNEL D5_PWM
-    #define MOTOR_3_PIN     D5_PIN
-
-    #define MOTOR_4_CHANNEL D10_PWM
-    #define MOTOR_4_PIN     D10_PIN
-    #define MOTOR_5_CHANNEL D9_PWM
-    #define MOTOR_5_PIN     D9_PIN
-
-    #define SERVO_0_CHANNEL D3_PWM
-    #define SERVO_0_PIN     D3_PIN
-    #define SERVO_1_CHANNEL D2_PWM
-    #define SERVO_1_PIN     D2_PIN
-
     #define NUM_WAYPOINTS 6
 #elif (MICROCONTROLLER_TYPE==MEGA328P)
    #define THROTTLE_RX_INPUT (DIGITALPORTD | 2)

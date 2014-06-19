@@ -68,11 +68,11 @@ void autotune(fixedpointnum *angleError,unsigned char startingOrStopping) {
     if (!global.state.armed) {
         // we aren't armed.  Don't do anything, but if autotuning is started and we have collected
         // autotuning data, save our settings to eeprom
-        if (startingOrStopping==AUTOTUNESTARTING && targetAngle!=0) write_user_settings_to_eeprom();
+        if (startingOrStopping==AUTOTUNE_STARTING && targetAngle!=0) write_user_settings_to_eeprom();
         return;
     }
       
-    if (startingOrStopping==AUTOTUNESTOPPING) {
+    if (startingOrStopping==AUTOTUNE_STOPPING) {
         settings.pid_igain[autotuneIndex]=currentIValueShifted>>AUTOTUNESHIFT;
       
         // multiply by D multiplier.  The best D is usually a little higher than what the algroithm produces.
@@ -86,7 +86,7 @@ void autotune(fixedpointnum *angleError,unsigned char startingOrStopping) {
         return;
     }
 
-    if (startingOrStopping==AUTOTUNESTARTING) {
+    if (startingOrStopping==AUTOTUNE_STARTING) {
         currentPValueShifted=settings.pid_pgain[autotuneIndex]<<AUTOTUNESHIFT;
         currentIValueShifted=settings.pid_igain[autotuneIndex]<<AUTOTUNESHIFT;
         

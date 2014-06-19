@@ -22,9 +22,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #if (GPS_TYPE!=NO_GPS)
 
-#define NAV_WAYPOINT_FLYOVER    0
-#define NAV_WAYPOINT_PAUSE      1
-
 // convert NAVIGATION_MAX_TILT user setting to a fixedpointnum constant
 #define MAX_TILT FIXEDPOINTCONSTANT(NAVIGATION_MAX_TILT)
 #define MAX_YAW_ANGLE_ERROR FIXEDPOINTCONSTANT(5.0)

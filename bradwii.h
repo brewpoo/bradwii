@@ -76,7 +76,7 @@ typedef struct {
 
 typedef struct {
     locationStruct location;        // 3D location of waypoint
-    unsigned char waypointType;     // Type of waypoint: fly-over, hold
+    unsigned char waypointType;     // Type of waypoint: fly-over, hold, home
     fixedpointnum targetVelocity;   // Velocity of fly-over (units?)
     fixedpointnum holdDuration;     // Length of time to hold position (seconds)
 } waypointStruct;
@@ -138,7 +138,9 @@ typedef struct {
     
     fixedpointnum compassCalibrationMultiplier[3];          // Multipliers used to calibrate the compass
     int compassZeroOffset[3];                               // Offsets used to calibrate the compass
+    
     servoStruct servo[NUM_SERVOS];                          // Servo settings
+    
     waypointStruct waypoints[NUM_WAYPOINTS];                // Waypoint storage
 } settingsstruct;
 

@@ -90,6 +90,7 @@ m
 #include "pilotcontrol.h"
 #include "uncrashable.h"
 #include "autotune.h"
+#include "autopilot.h"
 
 globalstruct global; // global variables
 settingsstruct settings; // user editable variables
@@ -228,32 +229,56 @@ int main(void) {
        // let autotune adjust the angle error if the pilot has autotune turned on
        if (global.activeCheckboxItems & CHECKBOX_MASK_AUTOTUNE) {
            if (!(global.previousActiveCheckboxItems & CHECKBOX_MASK_AUTOTUNE)) {
-               autotune(angleError,AUTOTUNESTARTING); // tell autotune that altitudeHoldwe just started autotuning
+               autotune(angleError,AUTOTUNE_STARTING); // tell autotune that we just started autotuning
            } else {
-               autotune(angleError,AUTOTUNETUNING); // tell autotune that we are in the middle of autotuning
+               autotune(angleError,AUTOTUNE_TUNING); // tell autotune that we are in the middle of autotuning
            }
        } else if (global.previousActiveCheckboxItems & CHECKBOX_MASK_AUTOTUNE) {
-           autotune(angleError,AUTOTUNESTOPPING); // tell autotune that we just stopped autotuning
+           autotune(angleError,AUTOTUNE_STOPPING); // tell autotune that we just stopped autotuning
        }
 #endif
 
+        // This gets reset every loop cycle
+        // keep a flag to indicate whether we shoud apply altitude hold.  The pilot can turn it on or
+        // uncrashability/autopilot mode can turn it on.
+        global.state.altitudeHold=0;
+        
+        if (global.activeCheckboxItems & CHECKBOX_MASK_ALTHOLD) {
+            global.state.altitudeHold=1;
+            if (!(global.previousActiveCheckboxItems & CHECKBOX_MASK_ALTHOLD)) {
+                // we just turned on alt hold.  Remember our current alt. as our target
+                global.altitudeHoldDesiredAltitude=global.altitude;
+                global.integratedAltitudeError=0;
+            }
+        }
+        
+        fixedpointnum throttleOutput;
+        
+#ifndef NO_AUTOPILOT
+        // autopilot is available
+        if (global.activeCheckboxItems & CHECKBOX_MASK_AUTOPILOT) {
+            if (!(global.previousActiveCheckboxItems & CHECKBOX_MASK_AUTOPILOT)) {
+                // let autopilot know to transition to the starting state
+                autopilot(AUTOPILOT_STARTING);
+            } else {
+                // autopilot normal run state
+                autopilot(AUTOPILOT_RUNNING);
+            }
+        } else if (global.previousActiveCheckboxItems & CHECKBOX_MASK_AUTOPILOT) {
+            // tell autotune that we just stopped autotuning
+            autopilot(AUTOPILOT_STOPPING);
+        } else {
+            // get the pilot's throttle component
+            // convert from fixedpoint -1 to 1 to fixedpoint 0 to 1
+            throttleOutput=(global.rxValues[THROTTLE_INDEX]>>1)+FIXEDPOINTCONSTANT(.5)+FPTHROTTLETOMOTOROFFSET;
+        }
+#else
+
        // get the pilot's throttle component
        // convert from fixedpoint -1 to 1 to fixedpoint 0 to 1
-       fixedpointnum throttleOutput=(global.rxValues[THROTTLE_INDEX]>>1)+FIXEDPOINTCONSTANT(.5)+FPTHROTTLETOMOTOROFFSET;
+       throttleOutput=(global.rxValues[THROTTLE_INDEX]>>1)+FIXEDPOINTCONSTANT(.5)+FPTHROTTLETOMOTOROFFSET;
+#endif
 
-       // keep a flag to indicate whether we shoud apply altitude hold.  The pilot can turn it on or
-       // uncrashability mode can turn it on.
-       global.state.altitudeHold=0;
-      
-       if (global.activeCheckboxItems & CHECKBOX_MASK_ALTHOLD) {
-           global.state.altitudeHold=1;
-           if (!(global.previousActiveCheckboxItems & CHECKBOX_MASK_ALTHOLD)) {
-               // we just turned on alt hold.  Remember our current alt. as our target
-               global.altitudeHoldDesiredAltitude=global.altitude;
-               global.integratedAltitudeError=0;
-           }
-       }
-       
 #ifndef NO_UNCRASHABLE
         uncrashable(gotNewGpsReading,angleError,&throttleOutput);
 #endif
@@ -390,6 +415,10 @@ void default_user_settings() {
         settings.compassCalibrationMultiplier[x]=1L<<FIXEDPOINTSHIFT;
         settings.gyroCalibration[x]=0;
         settings.accCalibration[x]=0;
+    }
+    
+    for (int x=0; x<8; x++) {
+        settings.waypoints[x].waypointType=WAYPOINT_TYPE_NONE;
     }
     
 #if NUM_SERVOS>0

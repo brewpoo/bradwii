@@ -17,9 +17,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "lib_fp.h"
 
-#define AUTOTUNESTARTING 1
-#define AUTOTUNESTOPPING 2
-#define AUTOTUNETUNING 0
+#define AUTOTUNE_STARTING 1
+#define AUTOTUNE_STOPPING 2
+#define AUTOTUNE_TUNING 0
 
 #define AUTOTUNEGOINGTOWARDTARGET 0
 #define AUTOTUNEGOINGAWAYFROMTARGET 1
