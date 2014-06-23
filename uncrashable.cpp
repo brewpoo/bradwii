@@ -77,9 +77,9 @@ void uncrashable(unsigned char gotNewGpsReading, fixedpointnum *angleError, fixe
                 } else doingUncrashableAltitudeHold=0;
                     
     #if (GPS_TYPE!=NO_GPS)
-                    // Next, check to see if our GPS says we are out of bounds
-                    // are we out of bounds?
-                    fixedpointnum bearingFromHome;
+        // Next, check to see if our GPS says we are out of bounds
+        // are we out of bounds?
+        fixedpointnum bearingFromHome;
         fixedpointnum distanceFromHome=navigation_get_distance_and_bearing(global.gps.currentLatitude,global.gps.currentLongitude,global.home.location.latitude,global.home.location.longitude,&bearingFromHome);
         
         if (distanceFromHome>FPUNCRASHABLE_RADIUS) { // we are outside the allowable area, navigate back toward home

@@ -138,16 +138,18 @@ void get_angle_error_from_pilot_input(fixedpointnum *angleError) {
         // figure out how much the most moved stick is from centered
         fixedpointnum maxStickThrow;
    
-        if (rxRollValue<0)
+        if (rxRollValue<0) {
             maxStickThrow=-rxRollValue;
-        else
+        } else {
             maxStickThrow=rxRollValue;
+        }
          
         if (rxPitchValue<0) {
             if (-rxPitchValue>maxStickThrow) maxStickThrow=-rxPitchValue;
-        } else
+        } else {
             if (rxPitchValue>maxStickThrow) maxStickThrow=rxPitchValue;
-         
+        }
+        
    
         // if the aircraft is tipped more than 90 degrees, use full acro mode so we don't run into
         // euler issues when inverted.  This also allows us to pause while up-side-down if we want to.
