@@ -54,12 +54,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // uncomment to allow arming and disarming with the sticks:
 // Arming and disarming only happen at low throttle
 // Uncomment the following two lines to allow arming using yaw
-#define STICK_ARM STICK_COMMAND_YAW_HIGH
-#define STICK_DISARM STICK_COMMAND_YAW_LOW
+//#define STICK_ARM STICK_COMMAND_YAW_HIGH
+//#define STICK_DISARM STICK_COMMAND_YAW_LOW
 
 // uncomment the following two lines to allow arming using yaw, roll, and pitch all at once
 //#define STICK_ARM STICK_COMMAND_YAW_HIGH+STICK_COMMAND_ROLL_HIGH+STICK_COMMAND_PITCH_LOW
 //#define STICK_DISARM STICK_COMMAND_YAW_LOW+STICK_COMMAND_ROLL_LOW+STICK_COMMAND_PITCH_LOW
+
+#define STICK_ARM STICK_COMMAND_ROLL_HIGH+STICK_COMMAND_PITCH_LOW
+#define STICK_DISARM STICK_COMMAND_ROLL_LOW+STICK_COMMAND_PITCH_LOW
 
 // Choose an aircraft configuration (defaults to QUADX)
 //#define AIRCRAFT_CONFIGURATION QUADX
@@ -72,7 +75,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 //#define MULTIWII_CONFIG_SERIAL_PORTS NOSERIALPORT
 //#define MULTIWII_CONFIG_SERIAL_PORTS SERIALPORT1
-//#define MULTIWII_CONFIG_SERIAL_PORTS SERIALPORT1+SERIALPORT3
+#define MULTIWII_CONFIG_SERIAL_PORTS SERIALPORT1+SERIALPORT3
 
 //#define SERIAL_0_BAUD 115200
 //#define SERIAL_1_BAUD 9600
@@ -83,8 +86,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //#define GPS_TYPE NO_GPS // select if no GPS is going to be used
 //#define GPS_TYPE I2C_GPS // select if an i2c gps is going to be used
 #define GPS_TYPE SERIAL_GPS   // select if a serial GPS (NMEA) is going to be used
-//#define GPS_SERIAL_PORT 2
-//#define GPS_BAUD 115200
+#define GPS_SERIAL_PORT 2
+#define GPS_BAUD 115200
 
 // Choose a multiplier for high rotation rates when in acro mode
 #define HIGH_RATES_MULTIPLIER 2.0

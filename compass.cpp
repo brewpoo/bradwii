@@ -258,7 +258,7 @@ char read_compass() {
         return(1);
     }
    return(0);
-   }
+}
 
 #endif
 
