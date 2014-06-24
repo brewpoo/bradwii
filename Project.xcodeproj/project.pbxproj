@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
+		B22E70EC1959D86300DAC67B /* ReadMe.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = ReadMe.md; sourceTree = "<group>"; };
 		B238AEB4194B385B00B860E8 /* uncrashable.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = uncrashable.cpp; sourceTree = SOURCE_ROOT; };
 		B238AEB5194B387100B860E8 /* uncrashable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = uncrashable.h; sourceTree = SOURCE_ROOT; };
 		B238AEB6194B5B4F00B860E8 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
@@ -78,6 +79,7 @@
 				B2CF63071949EEB200992E65 /* Makefile */,
 				B238AEB6194B5B4F00B860E8 /* LICENSE */,
 				B238AEB7194B5B8100B860E8 /* ReadMe.txt */,
+				B22E70EC1959D86300DAC67B /* ReadMe.md */,
 			);
 			sourceTree = "<group>";
 		};
