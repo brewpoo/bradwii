@@ -1,4 +1,4 @@
-This is a fork of the (BradWii)[https://github.com/bradquick/bradwii] project.
+This is a fork of the [BradWii](https://github.com/bradquick/bradwii) project.
 
 #BradWii
 
